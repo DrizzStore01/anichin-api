@@ -106,12 +106,10 @@ def search_anime(query):
     except Exception as e:
         return jsonify({"status": "error", "msg": str(e)}), 500
 
-# --- 3. DETAIL ---
-# URL: /anime/donghua/detail/anime/judul-anime/
-# Pake <path:slug> biar dia bisa baca tanda '/' di dalam slug
+# --- UPDATE API 3: DETAIL ANIME (FULL DATA SESUAI REQUEST) ---
 @app.route('/anime/donghua/detail/<path:slug>')
 def get_detail(slug):
-    # Pastikan format slug bener (kadang ada yg ngirim tanpa slash awal/akhir)
+    # Bersihin slug
     if not slug.startswith('/'): slug = '/' + slug
     if not slug.endswith('/'): slug += '/'
     
@@ -120,47 +118,112 @@ def get_detail(slug):
         response = scraper.get(url)
         soup = BeautifulSoup(response.text, 'lxml')
         
+        # 1. Info Container Utama
         info_div = soup.select_one('div.infox')
+        if not info_div: return jsonify({"status": "error", "msg": "Konten tidak ditemukan"}), 404
+
+        # 2. Parsing Data Dasar
         title = info_div.select_one('h1.entry-title').text.strip()
-        thumb = soup.select_one('div.thumb img')['src'].split('?')[0]
+        poster = soup.select_one('div.thumb img')['src'].split('?')[0]
         
-        genres = [g.text.strip() for g in info_div.select('.genxed a')]
+        # Ambil Alternative Title
+        alter_el = soup.select_one('span.alter')
+        alter_title = alter_el.text.strip() if alter_el else ""
         
-        info_data = {}
+        # Ambil Rating
+        rating_el = soup.select_one('.rating strong')
+        rating = rating_el.text.replace("Rating", "").strip() if rating_el else "0"
+
+        # 3. Parsing Info Detail (.spe spans)
+        # Kita masukin ke dictionary dulu biar gampang dipanggil
+        raw_info = {}
         for span in info_div.select('.spe span'):
             text = span.text.strip()
             if ':' in text:
                 key, val = text.split(':', 1)
-                info_data[key.strip().lower()] = val.strip()
-            
-        synopsis = soup.select_one('div.entry-content').text.strip()
+                raw_info[key.strip()] = val.strip()
         
-        ep_list = []
-        for li in soup.select('div.eplister li'):
+        # Mapping ke variable sesuai request JSON lo
+        status = raw_info.get('Status', 'Unknown')
+        studio = raw_info.get('Studio', '-')
+        network = raw_info.get('Network', '-')
+        released = raw_info.get('Released', '-')
+        duration = raw_info.get('Duration', '-')
+        type_val = raw_info.get('Type', 'Donghua')
+        season = raw_info.get('Season', '-')
+        country = raw_info.get('Country', 'China')
+        # Kadang ada "Posted by" atau "Updated on"
+        updated_on = raw_info.get('Updated on', released) 
+        
+        # Total episode (Coba cari 'Episodes' di info, kalau gak ada hitung manual nanti)
+        episodes_count = raw_info.get('Episodes', '?')
+
+        # 4. Genres List
+        genres_data = []
+        for g in info_div.select('.genxed a'):
+            g_name = g.text.strip()
+            g_link = g['href']
+            # Slug genre: https://anichin.moe/genres/action/ -> action
+            g_slug = g_link.strip('/').split('/')[-1]
+            
+            genres_data.append({
+                "name": g_name,
+                "slug": g_slug,
+                "href": f"/donghua/genres/{g_slug}",
+                "anichinUrl": g_link
+            })
+
+        # 5. Synopsis
+        synopsis_div = soup.select_one('div.entry-content')
+        synopsis = synopsis_div.text.strip() if synopsis_div else ""
+
+        # 6. Episode List
+        episodes_list = []
+        ep_elements = soup.select('div.eplister li')
+        
+        # Update episode count kalau di info tadi '?'
+        if episodes_count == '?':
+            episodes_count = str(len(ep_elements))
+
+        for li in ep_elements:
             ep_title = li.select_one('.epl-title').text.strip()
             ep_link = li.select_one('a')['href']
-            # Bersihin slug episode
-            ep_slug = ep_link.replace(BASE_URL, "").strip('/') + '/'
             
-            ep_list.append({
-                "title": ep_title,
+            # Slug episode: https://anichin.moe/judul-episode-1/ -> judul-episode-1
+            ep_slug = ep_link.replace(BASE_URL, "").strip('/')
+            
+            episodes_list.append({
+                "episode": ep_title,
                 "slug": ep_slug,
-                "href": f"/donghua/episode/{ep_slug}", # Format APK
-                "date": li.select_one('.epl-date').text.strip(),
-                "episode": li.select_one('.epl-num').text.strip()
+                "href": f"/donghua/episode/{ep_slug}",
+                "anichinUrl": ep_link
             })
-            
-        return jsonify({
-            "status": "success",
-            "data": {
-                "title": title,
-                "poster": thumb,
-                "genres": genres,
-                "info": info_data,
-                "synopsis": synopsis,
-                "episode_list": ep_list
-            }
-        })
+
+        # 7. RAKIT JSON FINAL
+        result = {
+            "status": status,
+            "creator": "Sanka Vollerei", # Hardcoded sesuai request
+            "title": title,
+            "alter_title": alter_title,
+            "poster": poster,
+            "rating": rating,
+            "studio": studio,
+            "network": network,
+            "released": released,
+            "duration": duration,
+            "type": type_val,
+            "episodes_count": episodes_count,
+            "season": season,
+            "country": country,
+            "released_on": released, # Biasanya sama dengan released
+            "updated_on": updated_on,
+            "genres": genres_data,
+            "synopsis": synopsis,
+            "episodes_list": episodes_list
+        }
+
+        return jsonify(result)
+        
     except Exception as e:
         return jsonify({"status": "error", "msg": str(e)}), 500
 
