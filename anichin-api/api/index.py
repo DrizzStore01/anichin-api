@@ -59,8 +59,7 @@ def get_home(page):
     except Exception as e:
         return jsonify({"status": "error", "msg": str(e)}), 500
 
-# --- 2. SEARCH ---
-# URL: /anime/donghua/search/naruto
+# --- UPDATE API 2: SEARCH (FORMAT APK LENGKAP) ---
 @app.route('/anime/donghua/search/<query>')
 def search_anime(query):
     url = f"{BASE_URL}/?s={query}"
@@ -68,28 +67,60 @@ def search_anime(query):
     try:
         response = scraper.get(url)
         soup = BeautifulSoup(response.text, 'lxml')
+        
         articles = soup.select('article.bs')
         data = []
         
         for item in articles:
             try:
-                title = item.select_one('.tt h2').text.strip()
-                link = item.select_one('div.bsx a')['href']
-                img = item.select_one('img')
+                # 1. Ambil Elemen Dasar
+                title_el = item.select_one('.tt h2')
+                link_el = item.select_one('div.bsx a')
+                img_el = item.select_one('img')
                 
-                slug = link.replace(BASE_URL, "").strip('/')
-                poster = img['src'].split('?')[0] if img else ""
+                if not title_el or not link_el: continue
                 
-                status_el = item.select_one('.status') or item.select_one('.epx')
-                status = status_el.text.strip() if status_el else "Unknown"
+                title = title_el.text.strip()
+                anichinUrl = link_el['href']
                 
-                type_val = "Donghua" # Default
+                # 2. Bersihin Slug
+                # Anichin URL biasanya: https://anichin.moe/anime/judul/ atau https://anichin.moe/judul-episode-1/
+                raw_slug = anichinUrl.replace(BASE_URL, "").strip('/')
                 
-                # Logic href beda antara Anime dan Episode
-                if "/anime/" in link:
-                    href = f"/donghua/detail/{slug}/"
+                # Hapus prefix 'anime/' kalau ada, biar slug-nya bersih
+                slug = raw_slug.replace('anime/', '')
+                
+                # 3. Poster HD
+                poster = img_el['src'].split('?')[0] if img_el else ""
+                
+                # 4. Ambil Metadata (Status, Type, Sub)
+                
+                # STATUS: Prioritas ambil .status (Completed), kalau gak ada ambil .epx (Ep 10 / Ongoing)
+                status_el = item.select_one('.status')
+                epx_el = item.select_one('.epx')
+                
+                status = "Ongoing" # Default
+                if status_el:
+                    status = status_el.text.strip() # "Completed"
+                elif epx_el:
+                    # Kalau isinya angka episode, berarti Ongoing
+                    status = "Ongoing"
+                
+                # TYPE: Donghua / Live Action / Movie
+                type_el = item.select_one('.typez')
+                type_val = type_el.text.strip() if type_el else "Donghua"
+                
+                # SUB: Sub Indo / Raw
+                sub_el = item.select_one('.sb')
+                sub_val = sub_el.text.strip() if sub_el else "Sub"
+                
+                # 5. Tentukan Href (Routing APK)
+                # Kalau link aslinya ada kata '/anime/', berarti itu halaman DETAIL SERIES
+                if '/anime/' in anichinUrl:
+                    href = f"/donghua/detail/{slug}"
                 else:
-                    href = f"/donghua/episode/{slug}/"
+                    # Kalau gak ada, berarti itu halaman EPISODE
+                    href = f"/donghua/episode/{slug}"
 
                 data.append({
                     "title": title,
@@ -97,12 +128,14 @@ def search_anime(query):
                     "poster": poster,
                     "status": status,
                     "type": type_val,
+                    "sub": sub_val,
                     "href": href,
-                    "anichinUrl": link
+                    "anichinUrl": anichinUrl
                 })
             except: continue
             
         return jsonify({"status": "success", "data": data})
+        
     except Exception as e:
         return jsonify({"status": "error", "msg": str(e)}), 500
 
@@ -202,7 +235,6 @@ def get_detail(slug):
         # 7. RAKIT JSON FINAL
         result = {
             "status": status,
-            "creator": "Sanka Vollerei", # Hardcoded sesuai request
             "title": title,
             "alter_title": alter_title,
             "poster": poster,
