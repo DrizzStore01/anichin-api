@@ -59,10 +59,18 @@ def get_home(page):
     except Exception as e:
         return jsonify({"status": "error", "msg": str(e)}), 500
 
-# --- UPDATE API 2: SEARCH (FORMAT APK LENGKAP) ---
-@app.route('/anime/donghua/search/<query>')
-def search_anime(query):
-    url = f"{BASE_URL}/?s={query}"
+# --- UPDATE API 2: SEARCH (SUPPORT PAGINATION) ---
+# URL: /anime/donghua/search/naruto/1
+@app.route('/anime/donghua/search/<query>/<page>')
+def search_anime(query, page):
+    # Logic URL Search WordPress:
+    # Page 1: https://anichin.moe/?s=katakunci
+    # Page 2: https://anichin.moe/page/2/?s=katakunci
+    
+    if page == '1':
+        url = f"{BASE_URL}/?s={query}"
+    else:
+        url = f"{BASE_URL}/page/{page}/?s={query}"
     
     try:
         response = scraper.get(url)
@@ -73,7 +81,6 @@ def search_anime(query):
         
         for item in articles:
             try:
-                # 1. Ambil Elemen Dasar
                 title_el = item.select_one('.tt h2')
                 link_el = item.select_one('div.bsx a')
                 img_el = item.select_one('img')
@@ -83,43 +90,27 @@ def search_anime(query):
                 title = title_el.text.strip()
                 anichinUrl = link_el['href']
                 
-                # 2. Bersihin Slug
-                # Anichin URL biasanya: https://anichin.moe/anime/judul/ atau https://anichin.moe/judul-episode-1/
+                # Bersihin Slug
                 raw_slug = anichinUrl.replace(BASE_URL, "").strip('/')
-                
-                # Hapus prefix 'anime/' kalau ada, biar slug-nya bersih
                 slug = raw_slug.replace('anime/', '')
                 
-                # 3. Poster HD
                 poster = img_el['src'].split('?')[0] if img_el else ""
                 
-                # 4. Ambil Metadata (Status, Type, Sub)
+                # Metadata
+                status_el = item.select_one('.status') or item.select_one('.epx')
+                status = status_el.text.strip() if status_el else "Ongoing"
+                if "Completed" in status: status = "Completed"
                 
-                # STATUS: Prioritas ambil .status (Completed), kalau gak ada ambil .epx (Ep 10 / Ongoing)
-                status_el = item.select_one('.status')
-                epx_el = item.select_one('.epx')
-                
-                status = "Ongoing" # Default
-                if status_el:
-                    status = status_el.text.strip() # "Completed"
-                elif epx_el:
-                    # Kalau isinya angka episode, berarti Ongoing
-                    status = "Ongoing"
-                
-                # TYPE: Donghua / Live Action / Movie
                 type_el = item.select_one('.typez')
                 type_val = type_el.text.strip() if type_el else "Donghua"
                 
-                # SUB: Sub Indo / Raw
                 sub_el = item.select_one('.sb')
                 sub_val = sub_el.text.strip() if sub_el else "Sub"
                 
-                # 5. Tentukan Href (Routing APK)
-                # Kalau link aslinya ada kata '/anime/', berarti itu halaman DETAIL SERIES
+                # Routing Href
                 if '/anime/' in anichinUrl:
                     href = f"/donghua/detail/{slug}"
                 else:
-                    # Kalau gak ada, berarti itu halaman EPISODE
                     href = f"/donghua/episode/{slug}"
 
                 data.append({
@@ -134,7 +125,12 @@ def search_anime(query):
                 })
             except: continue
             
-        return jsonify({"status": "success", "data": data})
+        return jsonify({
+            "status": "success", 
+            "query": query,
+            "page": page,
+            "data": data
+        })
         
     except Exception as e:
         return jsonify({"status": "error", "msg": str(e)}), 500
