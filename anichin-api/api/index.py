@@ -505,6 +505,91 @@ def get_completed(page):
         
     except Exception as e:
         return jsonify({"status": "error", "msg": str(e)}), 500
+        
+# --- UPDATE API 6: SCHEDULE (ROUTE BARU) ---
+@app.route('/anime/donghua/schedule')
+def get_schedule():
+    url = f"{BASE_URL}/schedule/"
+    
+    try:
+        response = scraper.get(url)
+        soup = BeautifulSoup(response.text, 'lxml')
+        
+        schedule_data = []
+        
+        # Loop setiap hari (Monday - Sunday)
+        # Class-nya format: .schedulepage.sch_sunday, .sch_monday, dst
+        days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
+        
+        for day in days:
+            day_container = soup.select_one(f'.schedulepage.sch_{day}')
+            if not day_container: continue
+            
+            day_name = day.capitalize() # Sunday
+            anime_list = []
+            
+            # Ambil semua anime di hari itu
+            articles = day_container.select('.bsx')
+            for item in articles:
+                try:
+                    title_el = item.select_one('.tt')
+                    link_el = item.select_one('a')
+                    img_el = item.select_one('img')
+                    
+                    if not title_el: continue
+                    
+                    title = title_el.text.strip()
+                    anichinUrl = link_el['href']
+                    
+                    # Bersihin Slug (Hapus base url + slash)
+                    slug = anichinUrl.replace(BASE_URL, "").strip('/')
+                    if not slug.endswith('/'): slug += '/'
+                    
+                    # Cek Link Tipe (Anime Detail atau Episode)
+                    # Di schedule biasanya link ke detail anime (/anime/...)
+                    # Tapi kadang ada yg link langsung ke episode
+                    if '/anime/' in anichinUrl:
+                        href = f"/donghua/detail/{slug.replace('anime/', '')}"
+                    else:
+                        href = f"/donghua/episode/{slug}"
+                    
+                    poster = img_el['src'].split('?')[0] if img_el else ""
+                    
+                    # Ambil Waktu Tayang & Episode
+                    # <span class="epx cndwn" data-rlsdt="1769354519">at 13:50</span>
+                    # <span class="sb Sub">14</span>
+                    time_el = item.select_one('.epx')
+                    time_release = time_el.text.replace('at ', '').strip() if time_el else "?"
+                    timestamp = time_el.get('data-rlsdt') if time_el else None
+                    
+                    ep_el = item.select_one('.sb')
+                    episode = ep_el.text.strip() if ep_el else "?"
+
+                    anime_list.append({
+                        "title": title,
+                        "slug": slug,
+                        "poster": poster,
+                        "episode": episode,
+                        "time": time_release,
+                        "timestamp": timestamp, # Unix timestamp (berguna buat countdown di APK)
+                        "href": href,
+                        "anichinUrl": anichinUrl
+                    })
+                except: continue
+            
+            if anime_list:
+                schedule_data.append({
+                    "day": day_name,
+                    "anime_list": anime_list
+                })
+            
+        return jsonify({
+            "status": "success",
+            "schedule": schedule_data
+        })
+        
+    except Exception as e:
+        return jsonify({"status": "error", "msg": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
