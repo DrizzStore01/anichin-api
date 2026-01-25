@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anichin Private</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #1a1a1a; color: #e0e0e0; }
+        .poster { aspect-ratio: 2/3; object-fit: cover; }
+        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        /* Loader sederhana */
+        #loader { display: none; }
+    </style>
+</head>
+<body class="font-sans min-h-screen pb-10">
+
+    <!-- HEADER -->
+    <nav class="sticky top-0 z-50 bg-black/90 backdrop-blur border-b border-gray-700 p-4 flex justify-between items-center">
+        <h1 class="text-xl font-bold text-red-500 cursor-pointer" onclick="loadHome()">ANICHIN<span class="text-white">.VIP</span></h1>
+        <div class="flex gap-2">
+            <input type="text" id="searchInput" placeholder="Cari anime..." class="bg-gray-800 text-sm px-3 py-1 rounded focus:outline-none border border-gray-600">
+            <button onclick="doSearch()" class="bg-red-600 px-3 py-1 rounded text-sm font-bold">Cari</button>
+        </div>
+    </nav>
+
+    <!-- CONTAINER UTAMA -->
+    <main id="app" class="p-4 max-w-4xl mx-auto">
+        <!-- Disini konten bakal muncul otomatis lewat JS -->
+    </main>
+
+    <!-- LOADING INDICATOR -->
+    <div id="loader" class="fixed inset-0 bg-black/80 flex justify-center items-center z-[60]">
+        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-red-500"></div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        const API_BASE = '/api'; // Nembak ke API Flask sendiri
+
+        // Fungsi Helper: Show/Hide Loading
+        const showLoading = () => document.getElementById('loader').style.display = 'flex';
+        const hideLoading = () => document.getElementById('loader').style.display = 'none';
+
+        // 1. LOAD HOME
+        async function loadHome() {
+            showLoading();
+            try {
+                const res = await fetch(`${API_BASE}/home`);
+                const json = await res.json();
+                renderGrid(json.data, "Update Terbaru");
+            } catch (e) { alert("Gagal muat data home"); }
+            hideLoading();
+        }
+
+        // 2. SEARCH
+        async function doSearch() {
+            const query = document.getElementById('searchInput').value;
+            if(!query) return;
+            showLoading();
+            try {
+                const res = await fetch(`${API_BASE}/search?query=${query}`);
+                const json = await res.json();
+                renderGrid(json.data, `Hasil cari: ${query}`);
+            } catch (e) { alert("Gagal cari data"); }
+            hideLoading();
+        }
+
+        // RENDER GRID (Tampilan Kotak-kotak Anime)
+        function renderGrid(data, title) {
+            const app = document.getElementById('app');
+            let html = `<h2 class="text-lg font-bold mb-4 border-l-4 border-red-500 pl-3">${title}</h2>`;
+            html += `<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">`;
+            
+            data.forEach(item => {
+                // Tentukan aksi klik berdasarkan tipe (anime/episode)
+                // Kalau di home biasanya link ke episode nonton langsung, kalau search bisa ke detail anime
+                const clickAction = item.slug.includes('episode') 
+                    ? `loadWatch('${item.slug}')` 
+                    : `loadDetail('${item.slug}')`;
+
+                html += `
+                <div onclick="${clickAction}" class="bg-gray-800 rounded-lg overflow-hidden cursor-pointer hover:scale-105 transition duration-200">
+                    <div class="relative">
+                        <img src="${item.thumb}" class="w-full poster" alt="${item.title}">
+                        <span class="absolute top-0 right-0 bg-red-600 text-xs px-2 py-1 font-bold">${item.episode || item.status || 'SUB'}</span>
+                    </div>
+                    <div class="p-2">
+                        <h3 class="text-sm font-semibold line-clamp-2">${item.title}</h3>
+                    </div>
+                </div>`;
+            });
+            html += `</div>`;
+            app.innerHTML = html;
+        }
+
+        // 3. LOAD DETAIL ANIME
+        async function loadDetail(slug) {
+            showLoading();
+            try {
+                const res = await fetch(`${API_BASE}/detail?slug=${slug}`);
+                const json = await res.json();
+                const d = json.data;
+
+                let html = `
+                <button onclick="loadHome()" class="mb-4 bg-gray-700 px-3 py-1 rounded text-xs">← Kembali</button>
+                <div class="flex flex-col md:flex-row gap-4 mb-6 bg-gray-800 p-4 rounded-lg">
+                    <img src="${d.thumb}" class="w-40 rounded shadow-lg mx-auto md:mx-0">
+                    <div>
+                        <h2 class="text-xl font-bold mb-2 text-red-400">${d.title}</h2>
+                        <p class="text-xs text-gray-400 mb-2">${JSON.stringify(d.info).replace(/["{}]/g, '').replace(/,/g, ' | ')}</p>
+                        <p class="text-sm text-gray-300 leading-relaxed h-32 overflow-y-auto">${d.synopsis}</p>
+                    </div>
+                </div>
+                <h3 class="font-bold mb-2">Daftar Episode</h3>
+                <div class="grid grid-cols-2 gap-2 h-96 overflow-y-auto pr-1">`;
+
+                d.episode_list.forEach(ep => {
+                    html += `
+                    <button onclick="loadWatch('${ep.slug}')" class="bg-gray-700 hover:bg-red-600 p-2 rounded text-xs text-left truncate transition">
+                        ${ep.title}
+                    </button>`;
+                });
+
+                html += `</div>`;
+                document.getElementById('app').innerHTML = html;
+
+            } catch (e) { alert("Error detail"); }
+            hideLoading();
+        }
+
+        // 4. LOAD PLAYER (NONTON)
+        async function loadWatch(slug) {
+            showLoading();
+            try {
+                const res = await fetch(`${API_BASE}/episode?slug=${slug}`);
+                const json = await res.json();
+                
+                // Cari server default (Ok.ru) atau yang pertama ketemu
+                const video = json.videos.find(v => v.server.toLowerCase().includes('ok.ru')) || json.videos[0];
+
+                if(!video) {
+                    alert("Link video tidak ditemukan/mati!");
+                    hideLoading();
+                    return;
+                }
+
+                let html = `
+                <button onclick="loadHome()" class="mb-4 bg-gray-700 px-3 py-1 rounded text-xs">← Home</button>
+                <div class="bg-black rounded-lg overflow-hidden aspect-video shadow-2xl mb-4 border border-gray-700">
+                    <iframe src="${video.url}" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
+                </div>
+                <h2 class="text-lg font-bold text-red-400 mb-4">${json.title}</h2>
+                <div class="bg-gray-800 p-3 rounded">
+                    <p class="text-xs text-gray-400 mb-2">Server saat ini: <span class="text-white font-bold">${video.server}</span></p>
+                    <div class="flex gap-2 flex-wrap">
+                        ${json.videos.map(v => 
+                            `<button onclick="document.querySelector('iframe').src='${v.url}'" class="bg-gray-700 px-3 py-1 text-xs rounded hover:bg-red-500">${v.server}</button>`
+                        ).join('')}
+                    </div>
+                </div>
+                `;
+                document.getElementById('app').innerHTML = html;
+
+            } catch (e) { alert("Error episode"); }
+            hideLoading();
+        }
+
+        // Jalanin saat pertama kali buka
+        loadHome();
+    </script>
+</body>
+</html>
