@@ -255,7 +255,7 @@ def get_detail(slug):
     except Exception as e:
         return jsonify({"status": "error", "msg": str(e)}), 500
 
-# --- UPDATE API 4: EPISODE STREAM (FINAL VERSION) ---
+# --- UPDATE API 4: EPISODE STREAM (STRUCTURE FIXED) ---
 @app.route('/anime/donghua/episode/<path:slug>')
 def get_episode_stream(slug):
     # Normalisasi slug
@@ -269,23 +269,23 @@ def get_episode_stream(slug):
         soup = BeautifulSoup(response.text, 'lxml')
         
         # 1. Judul Episode
-        ep_title = soup.select_one('h1.entry-title').text.strip()
+        ep_title_el = soup.select_one('h1.entry-title')
+        ep_title = ep_title_el.text.strip() if ep_title_el else "Unknown Title"
         
-        # 2. Streaming Links
+        # 2. STREAMING LINKS
         servers = []
+        
         # A. Default Player (Main)
         pembed = soup.select_one('#pembed iframe')
-        main_url_data = {}
-        
         if pembed:
+            # Coba deteksi nama server dari src
             src = pembed['src']
             name = "Default"
-            # Coba deteksi nama server dari src
             if "ok.ru" in src: name = "OK.ru"
             elif "dailymotion" in src: name = "Dailymotion"
+            elif "rumble" in src: name = "Rumble"
             
-            main_url_data = {"name": name, "url": src}
-            servers.append(main_url_data)
+            servers.append({"name": name, "url": src})
             
         # B. Mirror Players (Decode Base64)
         for opt in soup.select('select.mirror option'):
@@ -298,22 +298,22 @@ def get_episode_stream(slug):
             except: continue
             
         streaming_data = {
-            "main_url": main_url_data,
+            "main_url": servers[0] if servers else None,
             "servers": servers
         }
 
-        # 3. Download URL (Dari HTML .soraurlx)
+        # 3. DOWNLOAD URL
         download_data = {}
         dl_containers = soup.select('.soraurlx')
         
         for dl in dl_containers:
             try:
-                # Ambil resolusi dari tag <strong> (360p, 480p, VIP)
-                strong = dl.select_one('strong')
-                if not strong: continue
+                # Ambil resolusi dari tag strong (360p, 480p)
+                # Di HTML lo formatnya: <strong>360p</strong>
+                res_tag = dl.select_one('strong')
+                if not res_tag: continue
                 
-                # Bersihin text: "360p " -> "360p"
-                res_key = strong.text.strip().lower().replace(' ', '')
+                resolution = res_tag.text.strip().lower().replace(' ', '') # 360p
                 
                 links = {}
                 for a in dl.select('a'):
@@ -321,12 +321,12 @@ def get_episode_stream(slug):
                     link = a['href']
                     links[host] = link
                 
-                # Format key JSON: "download_url_360p"
-                key = f"download_url_{res_key}"
+                # Format key: download_url_360p
+                key = f"download_url_{resolution}"
                 download_data[key] = links
             except: continue
 
-        # 4. Donghua Details (Dari .headlist)
+        # 4. DONGHUA DETAILS (Info Series)
         details_data = {}
         headlist = soup.select_one('.headlist')
         if headlist:
@@ -334,36 +334,36 @@ def get_episode_stream(slug):
             d_thumb_el = headlist.select_one('.thumb img')
             
             d_title = d_title_el.text.strip()
-            d_anichinUrl = d_title_el['href']
-            d_slug = d_anichinUrl.replace(BASE_URL, "").strip('/').replace('anime/', '')
+            d_link = d_title_el['href']
+            d_slug = d_link.replace(BASE_URL, "").strip('/').replace('anime/', '')
             d_poster = d_thumb_el['src'].split('?')[0] if d_thumb_el else ""
             
-            # Type & Released (Ambil dari metadata .item.meta)
-            type_text = "Donghua" # Default
-            epx_span = soup.select_one('.epx')
-            if epx_span:
-                type_text = epx_span.text.strip().replace('\n', ' ')
+            # Ambil Tanggal Rilis
+            date_el = soup.select_one('.year .updated')
+            released = date_el.text.strip() if date_el else "-"
             
-            updated_span = soup.select_one('.updated')
-            released_date = updated_span.text.strip() if updated_span else "-"
+            # Type (Gabungin semua text di span .epx buat meniru format user)
+            type_text = "Donghua"
+            epx_el = soup.select_one('.epx')
+            if epx_el:
+                type_text = epx_el.text.strip() # Isinya biasanya "Donghua Sub"
 
             details_data = {
                 "title": d_title,
                 "slug": d_slug,
                 "poster": d_poster,
                 "type": type_text,
-                "released": released_date,
-                "uploader": "admin", # Hardcode (biasanya admin)
+                "released": released,
+                "uploader": "admin",
                 "href": f"/donghua/detail/{d_slug}",
-                "anichinUrl": d_anichinUrl
+                "anichinUrl": d_link
             }
 
-        # 5. Navigation (Prev, Next, All)
-        nav_data = {"previous_episode": None, "next_episode": None, "all_episodes": None}
+        # 5. NAVIGATION
+        nav_data = {"all_episodes": None, "previous_episode": None, "next_episode": None}
         nav_div = soup.select_one('.naveps')
-        
         if nav_div:
-            # All Episodes (Icon kotak-kotak)
+            # All Episodes
             all_a = nav_div.select_one('a[href*="/anime/"]')
             if all_a:
                 all_slug = all_a['href'].replace(BASE_URL, "").strip('/').replace('anime/', '')
@@ -378,21 +378,19 @@ def get_episode_stream(slug):
             if prev_a:
                 p_slug = prev_a['href'].replace(BASE_URL, "").strip('/')
                 nav_data["previous_episode"] = {
-                    "episode": "Previous Episode",
+                    "episode": "Previous Episode", # Text default krn gak ada di tombol
                     "slug": p_slug,
                     "href": f"/donghua/episode/{p_slug}",
                     "anichinUrl": prev_a['href']
                 }
-                
-            # Next Episode (Cek apakah ada link, atau cuma span text)
-            # Di HTML lo: <div class="nvs"><span class="nolink">Next...</span></div> -> Berarti null
+            
+            # Next Episode
+            # Cek apakah ada link next atau cuma span nolink
             next_a = nav_div.select_one('a[rel="next"]')
-            # Kadang gak pake rel="next", cari manual yang ada text 'Next'
+            # Fallback manual check text
             if not next_a:
                 for a in nav_div.select('a'):
-                    if "Next" in a.text and "href" in a.attrs:
-                        next_a = a
-                        break
+                    if "Next" in a.text: next_a = a; break;
             
             if next_a:
                 n_slug = next_a['href'].replace(BASE_URL, "").strip('/')
@@ -403,34 +401,32 @@ def get_episode_stream(slug):
                     "anichinUrl": next_a['href']
                 }
 
-        # 6. Episodes List (Dari #singlepisode .episodelist)
+        # 6. EPISODES LIST
         episodes_list_data = []
-        # Ini list "Related Episodes" yang muncul di bawah player (sesuai HTML lo)
-        ep_list_container = soup.select('#singlepisode .episodelist li')
+        # Target list di bawah player (#singlepisode .episodelist)
+        ep_container = soup.select('#singlepisode .episodelist li')
         
-        for li in ep_list_container:
+        for li in ep_container:
             try:
                 a_tag = li.select_one('a')
                 if not a_tag: continue
                 
-                e_anichinUrl = a_tag['href']
-                e_slug = e_anichinUrl.replace(BASE_URL, "").strip('/')
-                
-                # Judul ada di .playinfo h3
                 e_title = li.select_one('.playinfo h3').text.strip()
+                e_link = a_tag['href']
+                e_slug = e_link.replace(BASE_URL, "").strip('/')
                 
                 episodes_list_data.append({
                     "episode": e_title,
                     "slug": e_slug,
                     "href": f"/donghua/episode/{e_slug}",
-                    "anichinUrl": e_anichinUrl
+                    "anichinUrl": e_link
                 })
             except: continue
 
-        # Return JSON Format Request
+        # Return Final JSON
         return jsonify({
             "status": "success",
-            "creator": "Sanka Vollerei", # Sesuai request
+            # "creator": "Sanka Vollerei", # DIHAPUS SESUAI REQUEST
             "episode": ep_title,
             "streaming": streaming_data,
             "download_url": download_data,
@@ -439,6 +435,74 @@ def get_episode_stream(slug):
             "episodes_list": episodes_list_data
         })
 
+    except Exception as e:
+        return jsonify({"status": "error", "msg": str(e)}), 500
+        
+# --- UPDATE API 5: COMPLETED (ROUTE BARU) ---
+# URL: /anime/donghua/completed/1
+@app.route('/anime/donghua/completed/<page>')
+def get_completed(page):
+    # Logic URL Completed di Anichin
+    # Page 1: https://anichin.moe/completed/
+    # Page 2: https://anichin.moe/completed/page/2/
+    
+    if page == '1':
+        url = f"{BASE_URL}/completed/"
+    else:
+        url = f"{BASE_URL}/completed/page/{page}/"
+    
+    try:
+        response = scraper.get(url)
+        soup = BeautifulSoup(response.text, 'lxml')
+        
+        # Cari container list (Biasanya class .listupd)
+        container = soup.select_one('div.listupd')
+        articles = container.select('article.bs')
+        
+        completed_donghua = []
+        for item in articles:
+            try:
+                # 1. Ambil Data Dasar
+                title_el = item.select_one('.tt h2')
+                link_el = item.select_one('div.bsx a')
+                img_el = item.select_one('img')
+                
+                if not title_el or not link_el: continue
+                
+                title = title_el.text.strip()
+                anichinUrl = link_el['href']
+                
+                # 2. Slug & Href
+                # Link Completed biasanya ke detail anime: /anime/judul/
+                # Slug yang dimau: the-dragon-soul/ (ada slash belakang)
+                slug = anichinUrl.replace(BASE_URL, "").strip('/')
+                slug = slug.replace('anime/', '') # Jaga-jaga kalo ada prefix anime
+                if not slug.endswith('/'): slug += '/'
+                
+                href = f"/donghua/detail/{slug}"
+                
+                # 3. Poster
+                poster = img_el['src'].split('?')[0] if img_el else ""
+                
+                # 4. Status (Hardcode Completed sesuai request JSON lo)
+                status = "Completed"
+
+                completed_donghua.append({
+                    "title": title,
+                    "slug": slug,
+                    "poster": poster,
+                    "status": status,
+                    "href": href,
+                    "anichinUrl": anichinUrl
+                })
+            except: continue
+            
+        return jsonify({
+            "status": "success",
+            # "creator": "Sanka Vollerei", # DIHAPUS
+            "completed_donghua": completed_donghua
+        })
+        
     except Exception as e:
         return jsonify({"status": "error", "msg": str(e)}), 500
 
