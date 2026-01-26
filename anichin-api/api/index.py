@@ -407,36 +407,76 @@ def get_schedule():
     except Exception as e:
         return jsonify({"status": "error", "msg": str(e)}), 500
 
-# --- 7. EXTRACT RUMBLE ---
+# --- UPDATE API 7: RUMBLE EXTRACTOR (MULTI QUALITY) ---
 @app.route('/anime/donghua/extract/rumble')
 def extract_rumble():
+    # Cara pakai: /anime/donghua/extract/rumble?url=...
     embed_url = request.args.get('url')
-    if not embed_url: return jsonify({"status": "error", "msg": "No URL"}), 400
+    
+    if not embed_url:
+        return jsonify({"status": "error", "msg": "Mana URL Rumble-nya?"}), 400
     
     try:
-        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/91.0.4472.124 Safari/537.36', 'Referer': 'https://anichin.moe/'}
+        # Headers standar
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            'Referer': 'https://anichin.moe/'
+        }
+        
         response = scraper.get(embed_url, headers=headers)
         
-        mp4_links = re.findall(r'"url":"(https:[^"]+\.mp4)"', response.text)
-        if not mp4_links:
-            mp4_links = re.findall(r'"url":"(https:\/\/[^"]+\.mp4)"', response.text)
+        # --- LOGIC BARU: BRUTE FORCE ---
+        # Cari string APAPUN yang diawali http dan diakhiri .mp4
+        # Ini bakal nangkep semua link yang sembunyi di JSON manapun
+        raw_links = re.findall(r'(https?:[\\/]+[^"\'\s]+\.mp4)', response.text)
+        
+        if not raw_links:
+             return jsonify({"status": "error", "msg": "Gak nemu link MP4 satupun"}), 404
 
-        if mp4_links:
-            clean_links = [l.replace('\\/', '/') for l in mp4_links]
-            unique_links = list(set(clean_links))
-            final_link = unique_links[0]
-            for link in unique_links:
-                if ".haa.mp4" in link: final_link = link; break;
-                elif ".gaa.mp4" in link: final_link = link
+        # Bersihin link (Unescape backslash)
+        clean_links = set() # Pake set biar gak duplikat
+        for l in raw_links:
+            # Ganti \/ jadi / dan hapus quote sisa
+            fixed = l.replace('\\/', '/').strip('"').strip("'")
+            clean_links.add(fixed)
+
+        # Mapping Kualitas berdasarkan Kode File Rumble
+        quality_map = []
+        
+        for link in clean_links:
+            label = "Unknown"
+            priority = 0
             
-            return jsonify({
-                "status": "success",
-                "quality": "HD/Auto",
-                "stream_url": final_link,
-                "all_qualities": unique_links
+            if ".haa.mp4" in link: 
+                label = "1080p"; priority = 5
+            elif ".gaa.mp4" in link: 
+                label = "720p"; priority = 4
+            elif ".caa.mp4" in link: 
+                label = "480p"; priority = 3
+            elif ".baa.mp4" in link: 
+                label = "360p"; priority = 2
+            elif ".oaa.mp4" in link or ".Faa.mp4" in link: 
+                label = "Low/Mobile"; priority = 1
+                
+            quality_map.append({
+                "quality": label,
+                "url": link,
+                "priority": priority
             })
-        else:
-            return jsonify({"status": "error", "msg": "Failed to extract"}), 404
+
+        # Urutkan dari kualitas tertinggi (Priority 5 -> 1)
+        quality_map.sort(key=lambda x: x['priority'], reverse=True)
+        
+        # Ambil yang terbaik buat 'stream_url' default
+        best_link = quality_map[0]['url'] if quality_map else ""
+
+        return jsonify({
+            "status": "success",
+            "msg": f"Found {len(quality_map)} qualities",
+            "default_stream": best_link,
+            "qualities": quality_map # Ini list lengkap buat APK
+        })
+
     except Exception as e:
         return jsonify({"status": "error", "msg": str(e)}), 500
 
