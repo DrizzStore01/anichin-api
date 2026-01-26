@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request, render_template
 import cloudscraper
 from bs4 import BeautifulSoup
 import base64
+import re
 
 app = Flask(__name__)
 scraper = cloudscraper.create_scraper(browser={'browser': 'chrome', 'platform': 'android', 'desktop': False})
@@ -588,6 +589,64 @@ def get_schedule():
             "schedule": schedule_data
         })
         
+    except Exception as e:
+        return jsonify({"status": "error", "msg": str(e)}), 500
+        
+# --- UPDATE API KHUSUS: RUMBLE EXTRACTOR (SERVER SIDE) ---
+
+@app.route('/anime/donghua/extract/rumble')
+def extract_rumble():
+    # Cara pakai: /extract/rumble?url=https://rumble.com/embed/v5bkkx1/
+    embed_url = request.args.get('url')
+    
+    if not embed_url:
+        return jsonify({"status": "error", "msg": "Mana URL Rumble-nya?"}), 400
+    
+    try:
+        # Headers standar
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            'Referer': 'https://anichin.moe/'
+        }
+        
+        # Request ke Rumble
+        response = scraper.get(embed_url, headers=headers)
+        
+        # Logic Regex yang KEMAREN SUKSES
+        # Mencari pola "url":"https:.....mp4"
+        mp4_links = re.findall(r'"url":"(https:[^"]+\.mp4)"', response.text)
+        
+        # Fallback kalau regex pertama gagal (backslashed)
+        if not mp4_links:
+            mp4_links = re.findall(r'"url":"(https:\/\/[^"]+\.mp4)"', response.text)
+
+        if mp4_links:
+            # Bersihin link (hapus backslash escape)
+            clean_links = [l.replace('\\/', '/') for l in mp4_links]
+            unique_links = list(set(clean_links))
+            
+            # Sortir: Kita asumsikan link dengan string '1080' atau '720' adalah kualitas tinggi
+            # Atau simply kirim semua list-nya ke APK biar user milih (atau ambil index 0)
+            
+            # Cari yang HD (Prioritas)
+            final_link = unique_links[0]
+            for link in unique_links:
+                if ".haa.mp4" in link: # Kode Rumble buat 1080p biasanya ada .haa
+                    final_link = link
+                    break
+                elif ".gaa.mp4" in link: # Kode Rumble buat 720p
+                    final_link = link
+            
+            return jsonify({
+                "status": "success",
+                "quality": "HD/Auto",
+                "stream_url": final_link,
+                "all_qualities": unique_links # Opsional kalau mau milih
+            })
+            
+        else:
+            return jsonify({"status": "error", "msg": "Gagal nemu MP4"}), 404
+
     except Exception as e:
         return jsonify({"status": "error", "msg": str(e)}), 500
 
