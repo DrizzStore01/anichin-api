@@ -7,29 +7,69 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'JetBrains Mono', monospace; background-color: #0d1117; color: #c9d1d9; overflow-x: hidden; }
+        /* BASE STYLING */
+        body { 
+            font-family: 'JetBrains Mono', monospace; 
+            background-color: #0d1117; 
+            color: #c9d1d9; 
+            overflow-x: hidden; /* Mencegah geser kanan kiri */
+            width: 100vw;
+        }
+
+        /* CARD STYLING */
         .endpoint-card { border: 1px solid #30363d; transition: 0.2s; }
         .endpoint-card:hover { border-color: #58a6ff; }
         .method { font-size: 0.6rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; background: #238636; color: white; }
-        input { background: #010409; border: 1px solid #30363d; color: #e6edf3; padding: 4px 8px; border-radius: 4px; font-size: 12px; width: 100%; transition: 0.2s; }
+        
+        /* INPUT STYLING */
+        input { 
+            background: #010409; 
+            border: 1px solid #30363d; 
+            color: #e6edf3; 
+            padding: 6px 8px; 
+            border-radius: 4px; 
+            font-size: 12px; 
+            width: 100%; 
+            transition: 0.2s; 
+        }
         input:focus { border-color: #58a6ff; outline: none; }
-        button.test-btn { background: #1f6feb; color: white; font-size: 10px; padding: 4px 10px; border-radius: 4px; font-weight: bold; transition: 0.2s; white-space: nowrap; }
+        
+        /* BUTTON STYLING */
+        button.test-btn { 
+            background: #1f6feb; 
+            color: white; 
+            font-size: 10px; 
+            padding: 6px 12px; 
+            border-radius: 4px; 
+            font-weight: bold; 
+            transition: 0.2s; 
+            white-space: nowrap; 
+            cursor: pointer;
+        }
         button.test-btn:hover { background: #388bfd; }
-        pre { white-space: pre-wrap; word-wrap: break-word; }
+
+        /* JSON OUTPUT FIX (INI OBATNYA) */
+        pre#jsonOutput {
+            white-space: pre-wrap !important;       /* Jaga spasi tapi wrap */
+            word-wrap: break-word !important;       /* Patahkan kata */
+            word-break: break-all !important;       /* Patahkan link panjang */
+            overflow-x: hidden !important;          /* Hide scroll horizontal */
+            max-width: 100%;                        /* Batasi lebar */
+        }
     </style>
 </head>
-<body class="p-3 md:p-6 max-w-7xl mx-auto w-full">
+<body class="p-3 md:p-6 w-full box-border">
 
     <!-- HEADER -->
     <header class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-700 pb-4">
         <div>
             <h1 class="text-2xl font-bold text-white tracking-tight">ANICHIN<span class="text-blue-500">.SYSTEM</span></h1>
-            <p class="text-xs text-gray-500">Private API Backend Controller</p>
+            <p class="text-[10px] text-gray-500">Private Backend Controller</p>
         </div>
         <div class="bg-[#161b22] px-3 py-2 rounded border border-gray-700 w-full md:w-auto">
             <span class="text-[10px] text-gray-500 block">BASE URL</span>
-            <div class="flex items-center gap-2">
-                <div class="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
+            <div class="flex items-center gap-2 overflow-hidden">
+                <div class="h-2 w-2 rounded-full bg-green-500 animate-pulse flex-shrink-0"></div>
                 <span id="baseUrlDisplay" class="text-xs text-yellow-400 font-bold select-all truncate">{{ app_url }}</span>
             </div>
         </div>
@@ -44,10 +84,10 @@
             <div class="endpoint-card bg-[#161b22] p-3 rounded-lg">
                 <div class="flex justify-between items-center mb-2">
                     <span class="method">GET</span>
-                    <span class="text-xs font-bold text-gray-300">/anime/donghua/home/&lt;page&gt;</span>
+                    <span class="text-xs font-bold text-gray-300">/home/&lt;page&gt;</span>
                 </div>
                 <div class="flex gap-2">
-                    <input type="number" id="input_home" value="1" placeholder="Page (1, 2, 3...)">
+                    <input type="number" id="input_home" value="1" placeholder="Page">
                     <button class="test-btn" onclick="runTest('home')">GO</button>
                 </div>
             </div>
@@ -56,11 +96,11 @@
             <div class="endpoint-card bg-[#161b22] p-3 rounded-lg">
                 <div class="flex justify-between items-center mb-2">
                     <span class="method">GET</span>
-                    <span class="text-xs font-bold text-gray-300">/anime/donghua/search/&lt;query&gt;/&lt;page&gt;</span>
+                    <span class="text-xs font-bold text-gray-300">/search/&lt;query&gt;/&lt;page&gt;</span>
                 </div>
                 <div class="flex gap-2">
-                    <input type="text" id="input_search_q" value="soul land" placeholder="Query (Judul)">
-                    <input type="number" id="input_search_p" value="1" placeholder="Page" class="!w-16">
+                    <input type="text" id="input_search_q" value="soul land" placeholder="Query">
+                    <input type="number" id="input_search_p" value="1" placeholder="Pg" class="!w-16">
                     <button class="test-btn" onclick="runTest('search')">GO</button>
                 </div>
             </div>
@@ -69,10 +109,10 @@
             <div class="endpoint-card bg-[#161b22] p-3 rounded-lg">
                 <div class="flex justify-between items-center mb-2">
                     <span class="method">GET</span>
-                    <span class="text-xs font-bold text-gray-300">/anime/donghua/detail/&lt;slug&gt;</span>
+                    <span class="text-xs font-bold text-gray-300">/detail/&lt;slug&gt;</span>
                 </div>
                 <div class="flex gap-2">
-                    <input type="text" id="input_detail" value="/anime/soul-land-2-the-unrivaled-tang-sect/" placeholder="Slug (e.g. /anime/judul/)">
+                    <input type="text" id="input_detail" value="/anime/soul-land-2-the-unrivaled-tang-sect/" placeholder="Slug">
                     <button class="test-btn" onclick="runTest('detail')">GO</button>
                 </div>
             </div>
@@ -81,10 +121,10 @@
             <div class="endpoint-card bg-[#161b22] p-3 rounded-lg">
                 <div class="flex justify-between items-center mb-2">
                     <span class="method">GET</span>
-                    <span class="text-xs font-bold text-gray-300">/anime/donghua/episode/&lt;slug&gt;</span>
+                    <span class="text-xs font-bold text-gray-300">/episode/&lt;slug&gt;</span>
                 </div>
                 <div class="flex gap-2">
-                    <input type="text" id="input_episode" value="/soul-land-2-the-unrivaled-tang-sect-episode-65-subtitle-indonesia/" placeholder="Episode Slug">
+                    <input type="text" id="input_episode" value="/soul-land-2-the-unrivaled-tang-sect-episode-65-subtitle-indonesia/" placeholder="Slug">
                     <button class="test-btn" onclick="runTest('episode')">GO</button>
                 </div>
             </div>
@@ -93,7 +133,7 @@
             <div class="endpoint-card bg-[#161b22] p-3 rounded-lg">
                 <div class="flex justify-between items-center mb-2">
                     <span class="method">GET</span>
-                    <span class="text-xs font-bold text-gray-300">/anime/donghua/completed/&lt;page&gt;</span>
+                    <span class="text-xs font-bold text-gray-300">/completed/&lt;page&gt;</span>
                 </div>
                 <div class="flex gap-2">
                     <input type="number" id="input_completed" value="1" placeholder="Page">
@@ -105,10 +145,10 @@
              <div class="endpoint-card bg-[#161b22] p-3 rounded-lg">
                 <div class="flex justify-between items-center mb-2">
                     <span class="method">GET</span>
-                    <span class="text-xs font-bold text-gray-300">/anime/donghua/schedule</span>
+                    <span class="text-xs font-bold text-gray-300">/schedule</span>
                 </div>
                 <div class="flex gap-2">
-                    <input type="text" value="No Parameters" disabled class="opacity-50 cursor-not-allowed">
+                    <input type="text" value="Automatic" disabled class="opacity-50 cursor-not-allowed">
                     <button class="test-btn" onclick="runTest('schedule')">GO</button>
                 </div>
             </div>
@@ -117,10 +157,10 @@
             <div class="endpoint-card bg-[#161b22] p-3 rounded-lg border-green-900/50">
                 <div class="flex justify-between items-center mb-2">
                     <span class="method bg-green-700">EXTRACT</span>
-                    <span class="text-xs font-bold text-green-400">/extract/rumble?url=...</span>
+                    <span class="text-xs font-bold text-green-400">/extract/rumble</span>
                 </div>
                 <div class="flex gap-2">
-                    <input type="text" id="input_rumble" value="https://rumble.com/embed/v5bkkx1/?pub=2li51c" placeholder="Rumble Embed URL">
+                    <input type="text" id="input_rumble" value="https://rumble.com/embed/v5bkkx1/?pub=2li51c" placeholder="URL">
                     <button class="test-btn bg-green-700 hover:bg-green-600" onclick="runTest('rumble')">GO</button>
                 </div>
             </div>
@@ -131,21 +171,26 @@
         <div class="lg:col-span-5 mt-4 lg:mt-0">
             <div class="sticky top-4">
                 <div class="flex justify-between items-center mb-2">
-                    <span class="text-xs font-bold text-gray-400 uppercase">Response Output</span>
+                    <span class="text-[10px] font-bold text-gray-400 uppercase">JSON RESULT</span>
                     <span id="statusBadge" class="text-[10px] bg-gray-800 px-2 py-1 rounded text-gray-400">Idle</span>
                 </div>
+
                 <!-- BOX ACTIVE ROUTE -->
-                <div class="bg-black/30 border border-gray-700 rounded p-2 mb-2">
-                    <span class="text-[9px] text-gray-500 uppercase block mb-1">Active Request URL</span>
+                <div class="bg-black/30 border border-gray-700 rounded p-2 mb-2 overflow-hidden">
+                    <span class="text-[9px] text-gray-500 uppercase block mb-1">Requested Endpoint</span>
                     <div class="flex items-center justify-between">
-                        <code id="activeRoute" class="text-[10px] text-blue-400 font-mono truncate">Waiting...</code>
-                        <button onclick="copyRoute()" class="text-[10px] text-gray-500 hover:text-white">COPY</button>
+                        <code id="activeRoute" class="text-[10px] text-blue-400 font-mono truncate mr-2">...</code>
+                        <button onclick="copyRoute()" class="text-[10px] text-gray-500 hover:text-white flex-shrink-0">COPY</button>
                     </div>
                 </div>
                 
-                <div class="relative group">
-                    <button onclick="copyJson()" class="absolute top-2 right-2 bg-gray-700 hover:bg-gray-600 text-[10px] text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition">Copy JSON</button>
-                    <pre id="jsonOutput" class="bg-[#0d1117] border border-gray-700 rounded-lg p-3 text-[10px] text-green-400 overflow-y-auto h-[500px] w-full font-mono break-all whitespace-pre-wrap shadow-inner">Silakan test endpoint di sebelah kiri.</pre>
+                <div class="relative group w-full">
+                    <button onclick="copyJson()" class="absolute top-2 right-2 bg-gray-700 hover:bg-gray-600 text-[10px] text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition z-10">Copy JSON</button>
+                    <!-- CONTAINER JSON UTAMA -->
+                    <pre id="jsonOutput" class="bg-[#0d1117] border border-gray-700 rounded-lg p-3 text-[10px] text-green-400 overflow-y-auto h-[500px] w-full font-mono shadow-inner">
+Ready to test.
+Silakan klik tombol GO di kiri.
+                    </pre>
                 </div>
             </div>
         </div>
@@ -187,7 +232,6 @@
                 endpoint = `/anime/donghua/extract/rumble?url=${url}`;
             }
 
-            // Fix double slash kalau ada
             endpoint = endpoint.replace('//', '/');
             fetchApi(endpoint);
         }
@@ -197,10 +241,12 @@
             const badge = document.getElementById('statusBadge');
             const routeDisplay = document.getElementById('activeRoute');
             
-            // Update UI
             routeDisplay.innerText = endpoint;
+            
+            // RESET CLASS DULU BIAR BERSIH
+            output.className = "bg-[#0d1117] border border-gray-700 rounded-lg p-3 text-[10px] text-yellow-400 overflow-y-auto h-[500px] w-full font-mono shadow-inner";
             output.innerText = "Loading...";
-            output.className = "bg-[#0d1117] border border-gray-700 rounded-lg p-3 text-[10px] text-yellow-400 overflow-y-auto h-[500px] w-full font-mono break-all whitespace-pre-wrap";
+            
             badge.innerText = "Fetching...";
             badge.className = "text-[10px] bg-yellow-900 text-yellow-200 px-2 py-1 rounded";
 
@@ -211,13 +257,18 @@
                 const time = Date.now() - start;
 
                 output.innerText = JSON.stringify(data, null, 2);
-                output.className = "bg-[#0d1117] border border-gray-700 rounded-lg p-3 text-[10px] text-green-400 overflow-y-auto h-[500px] w-full font-mono break-all whitespace-pre-wrap";
+                
+                // CLASS SUKSES (HIJAU)
+                output.className = "bg-[#0d1117] border border-gray-700 rounded-lg p-3 text-[10px] text-green-400 overflow-y-auto h-[500px] w-full font-mono shadow-inner";
                 
                 badge.innerText = `200 OK (${time}ms)`;
                 badge.className = "text-[10px] bg-green-900 text-green-200 px-2 py-1 rounded";
             } catch (e) {
                 output.innerText = e.message;
-                output.className = "bg-[#0d1117] border border-gray-700 rounded-lg p-3 text-[10px] text-red-400 overflow-y-auto h-[500px] w-full font-mono break-all whitespace-pre-wrap";
+                
+                // CLASS ERROR (MERAH)
+                output.className = "bg-[#0d1117] border border-gray-700 rounded-lg p-3 text-[10px] text-red-400 overflow-y-auto h-[500px] w-full font-mono shadow-inner";
+                
                 badge.innerText = "Error";
                 badge.className = "text-[10px] bg-red-900 text-red-200 px-2 py-1 rounded";
             }
