@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        /* BASE RESET */
+        /* GLOBAL RESET */
         * { box-sizing: border-box; }
         
         body { 
@@ -15,28 +15,32 @@
             background-color: #0d1117; 
             color: #c9d1d9; 
             width: 100vw;
-            overflow-x: hidden;
+            overflow-x: hidden; /* Kunci Scroll Samping */
             margin: 0;
-            padding: 1rem;
+            padding: 0.75rem;
         }
 
-        /* CARD & INPUT */
+        /* CARD STYLE */
         .endpoint-card { border: 1px solid #30363d; transition: 0.2s; }
         .endpoint-card:hover { border-color: #58a6ff; }
-        .method { font-size: 0.6rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; background: #238636; color: white; }
         
+        /* METHOD BADGE */
+        .method { font-size: 0.6rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; background: #238636; color: white; display: inline-block; }
+        
+        /* INPUT FIELD */
         input { 
             background: #010409; 
             border: 1px solid #30363d; 
             color: #e6edf3; 
             padding: 6px 8px; 
             border-radius: 4px; 
-            font-size: 12px; 
+            font-size: 11px; 
             width: 100%; 
-            min-width: 0; /* Penting buat flex container */
+            min-width: 0; /* Anti Overflow di Flex */
         }
         input:focus { border-color: #58a6ff; outline: none; }
         
+        /* BUTTON */
         button.test-btn { 
             background: #1f6feb; 
             color: white; 
@@ -47,58 +51,57 @@
             white-space: nowrap; 
             flex-shrink: 0;
         }
+        button.test-btn:hover { background: #388bfd; }
 
-        /* --- THE MAGIC CSS FOR JSON --- */
+        /* --- OBAT ANTI MELAR (JSON & URL) --- */
         pre#jsonOutput {
-            white-space: pre-wrap;       /* Wrap text ke bawah */
-            word-wrap: break-word;       /* Patahkan kata panjang */
-            overflow-wrap: break-word;   /* Standar baru buat patah kata */
-            word-break: break-all;       /* Patahkan link URL tanpa ampun */
+            white-space: pre-wrap !important;       
+            word-wrap: break-word !important;       
+            word-break: break-all !important;       
+            overflow-wrap: break-word !important;
             
             font-size: 10px;
             line-height: 1.4;
             max-width: 100%;
-            overflow-x: hidden;          /* Matikan scroll samping */
-            
-            /* Reset Margin/Padding */
+            overflow-x: hidden; 
             margin: 0; 
         }
 
-        /* Container Output */
-        .output-container {
-            width: 100%;
-            max-width: 100%;
-            overflow: hidden; /* Penjaga terakhir */
+        /* Buat Text URL Panjang */
+        .break-text-url {
+            word-break: break-all;
+            white-space: normal;
+            overflow-wrap: break-word;
         }
     </style>
 </head>
-<body class="p-3 md:p-6 w-full box-border">
+<body class="max-w-7xl mx-auto w-full">
 
     <!-- HEADER -->
-    <header class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-700 pb-4">
+    <header class="mb-6 flex flex-col gap-4 border-b border-gray-700 pb-4">
         <div>
             <h1 class="text-2xl font-bold text-white tracking-tight">ANICHIN<span class="text-blue-500">.SYSTEM</span></h1>
             <p class="text-[10px] text-gray-500">Private Backend Controller</p>
         </div>
-        <div class="bg-[#161b22] px-3 py-2 rounded border border-gray-700 w-full md:w-auto">
+        <div class="bg-[#161b22] px-3 py-2 rounded border border-gray-700 w-full">
             <span class="text-[10px] text-gray-500 block">BASE URL</span>
             <div class="flex items-center gap-2 overflow-hidden">
                 <div class="h-2 w-2 rounded-full bg-green-500 animate-pulse flex-shrink-0"></div>
-                <span id="baseUrlDisplay" class="text-xs text-yellow-400 font-bold select-all truncate">{{ app_url }}</span>
+                <span class="text-xs text-yellow-400 font-bold select-all truncate">{{ app_url }}</span>
             </div>
         </div>
     </header>
 
     <div class="grid lg:grid-cols-12 gap-6">
         
-        <!-- KOLOM KIRI: ENDPOINTS (7 Bagian) -->
+        <!-- KOLOM KIRI: ENDPOINTS -->
         <div class="lg:col-span-7 space-y-4">
 
             <!-- 1. HOME -->
             <div class="endpoint-card bg-[#161b22] p-3 rounded-lg">
-                <div class="flex justify-between items-center mb-2">
+                <div class="flex flex-wrap items-center gap-2 mb-2">
                     <span class="method">GET</span>
-                    <span class="text-xs font-bold text-gray-300">/home/&lt;page&gt;</span>
+                    <span class="text-xs font-bold text-gray-300 break-text-url">/home/&lt;page&gt;</span>
                 </div>
                 <div class="flex gap-2">
                     <input type="number" id="input_home" value="1" placeholder="Page">
@@ -108,9 +111,9 @@
 
             <!-- 2. SEARCH -->
             <div class="endpoint-card bg-[#161b22] p-3 rounded-lg">
-                <div class="flex justify-between items-center mb-2">
+                <div class="flex flex-wrap items-center gap-2 mb-2">
                     <span class="method">GET</span>
-                    <span class="text-xs font-bold text-gray-300">/search/&lt;query&gt;/&lt;page&gt;</span>
+                    <span class="text-xs font-bold text-gray-300 break-text-url">/search/&lt;query&gt;/&lt;page&gt;</span>
                 </div>
                 <div class="flex gap-2">
                     <input type="text" id="input_search_q" value="soul land" placeholder="Query">
@@ -121,9 +124,9 @@
 
             <!-- 3. DETAIL -->
             <div class="endpoint-card bg-[#161b22] p-3 rounded-lg">
-                <div class="flex justify-between items-center mb-2">
+                <div class="flex flex-wrap items-center gap-2 mb-2">
                     <span class="method">GET</span>
-                    <span class="text-xs font-bold text-gray-300">/detail/&lt;slug&gt;</span>
+                    <span class="text-xs font-bold text-gray-300 break-text-url">/detail/&lt;slug&gt;</span>
                 </div>
                 <div class="flex gap-2">
                     <input type="text" id="input_detail" value="/anime/soul-land-2-the-unrivaled-tang-sect/" placeholder="Slug">
@@ -133,9 +136,9 @@
 
             <!-- 4. EPISODE -->
             <div class="endpoint-card bg-[#161b22] p-3 rounded-lg">
-                <div class="flex justify-between items-center mb-2">
+                <div class="flex flex-wrap items-center gap-2 mb-2">
                     <span class="method">GET</span>
-                    <span class="text-xs font-bold text-gray-300">/episode/&lt;slug&gt;</span>
+                    <span class="text-xs font-bold text-gray-300 break-text-url">/episode/&lt;slug&gt;</span>
                 </div>
                 <div class="flex gap-2">
                     <input type="text" id="input_episode" value="/soul-land-2-the-unrivaled-tang-sect-episode-65-subtitle-indonesia/" placeholder="Slug">
@@ -145,9 +148,9 @@
 
             <!-- 5. COMPLETED -->
             <div class="endpoint-card bg-[#161b22] p-3 rounded-lg">
-                <div class="flex justify-between items-center mb-2">
+                <div class="flex flex-wrap items-center gap-2 mb-2">
                     <span class="method">GET</span>
-                    <span class="text-xs font-bold text-gray-300">/completed/&lt;page&gt;</span>
+                    <span class="text-xs font-bold text-gray-300 break-text-url">/completed/&lt;page&gt;</span>
                 </div>
                 <div class="flex gap-2">
                     <input type="number" id="input_completed" value="1" placeholder="Page">
@@ -157,9 +160,9 @@
 
              <!-- 6. SCHEDULE -->
              <div class="endpoint-card bg-[#161b22] p-3 rounded-lg">
-                <div class="flex justify-between items-center mb-2">
+                <div class="flex flex-wrap items-center gap-2 mb-2">
                     <span class="method">GET</span>
-                    <span class="text-xs font-bold text-gray-300">/schedule</span>
+                    <span class="text-xs font-bold text-gray-300 break-text-url">/schedule</span>
                 </div>
                 <div class="flex gap-2">
                     <input type="text" value="Automatic" disabled class="opacity-50 cursor-not-allowed">
@@ -169,9 +172,9 @@
 
             <!-- 7. RUMBLE EXTRACT -->
             <div class="endpoint-card bg-[#161b22] p-3 rounded-lg border-green-900/50">
-                <div class="flex justify-between items-center mb-2">
+                <div class="flex flex-wrap items-center gap-2 mb-2">
                     <span class="method bg-green-700">EXTRACT</span>
-                    <span class="text-xs font-bold text-green-400">/extract/rumble</span>
+                    <span class="text-xs font-bold text-green-400 break-text-url">/extract/rumble</span>
                 </div>
                 <div class="flex gap-2">
                     <input type="text" id="input_rumble" value="https://rumble.com/embed/v5bkkx1/?pub=2li51c" placeholder="URL">
@@ -185,26 +188,21 @@
         <div class="lg:col-span-5 mt-4 lg:mt-0">
             <div class="sticky top-4">
                 <div class="flex justify-between items-center mb-2">
-                    <span class="text-[10px] font-bold text-gray-400 uppercase">JSON RESULT</span>
+                    <span class="text-[10px] font-bold text-gray-400 uppercase">RESULT</span>
                     <span id="statusBadge" class="text-[10px] bg-gray-800 px-2 py-1 rounded text-gray-400">Idle</span>
                 </div>
 
-                <!-- BOX ACTIVE ROUTE -->
-                <div class="bg-black/30 border border-gray-700 rounded p-2 mb-2 overflow-hidden">
+                <!-- BOX ACTIVE ROUTE (Fixed Layout) -->
+                <div class="bg-black/30 border border-gray-700 rounded p-2 mb-2 w-full">
                     <span class="text-[9px] text-gray-500 uppercase block mb-1">Requested Endpoint</span>
-                    <div class="flex items-center justify-between">
-                        <code id="activeRoute" class="text-[10px] text-blue-400 font-mono truncate mr-2">...</code>
-                        <button onclick="copyRoute()" class="text-[10px] text-gray-500 hover:text-white flex-shrink-0">COPY</button>
-                    </div>
+                    <!-- Pake class break-text-url biar mau turun ke bawah -->
+                    <div id="activeRoute" class="text-[10px] text-blue-400 font-mono break-text-url select-all">...</div>
                 </div>
                 
-                <div class="relative group w-full output-container">
-                    <button onclick="copyJson()" class="absolute top-2 right-2 bg-gray-700 hover:bg-gray-600 text-[10px] text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition z-10">Copy JSON</button>
-                    
-                    <pre id="jsonOutput" class="bg-[#0d1117] border border-gray-700 rounded-lg p-3 text-green-400 h-[500px] overflow-y-auto shadow-inner">
-Ready to test.
-Silakan klik tombol GO di kiri.
-                    </pre>
+                <div class="relative group w-full">
+                    <button onclick="copyJson()" class="absolute top-2 right-2 bg-gray-700 hover:bg-gray-600 text-[10px] text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition z-10">Copy</button>
+                    <!-- CONTAINER JSON -->
+                    <pre id="jsonOutput" class="bg-[#0d1117] border border-gray-700 rounded-lg p-3 text-[10px] text-green-400 h-[500px] overflow-y-auto shadow-inner">Ready.</pre>
                 </div>
             </div>
         </div>
@@ -212,14 +210,14 @@ Silakan klik tombol GO di kiri.
     </div>
 
     <script>
+        // --- JAVASCRIPT FIXED ---
         const BASE_URL = "{{ app_url }}";
 
         function runTest(type) {
             let endpoint = "";
             
             if (type === 'home') {
-                const page = document.getElementById('input_home').value;
-                endpoint = `/anime/donghua/home/${page}`;
+                endpoint = `/anime/donghua/home/${document.getElementById('input_home').value}`;
             } 
             else if (type === 'search') {
                 const q = document.getElementById('input_search_q').value;
@@ -227,26 +225,30 @@ Silakan klik tombol GO di kiri.
                 endpoint = `/anime/donghua/search/${q}/${p}`;
             }
             else if (type === 'detail') {
-                const slug = document.getElementById('input_detail').value;
-                endpoint = `/anime/donghua/detail/${slug}`;
+                endpoint = `/anime/donghua/detail/${document.getElementById('input_detail').value}`;
             }
             else if (type === 'episode') {
-                const slug = document.getElementById('input_episode').value;
-                endpoint = `/anime/donghua/episode/${slug}`;
+                endpoint = `/anime/donghua/episode/${document.getElementById('input_episode').value}`;
             }
             else if (type === 'completed') {
-                const page = document.getElementById('input_completed').value;
-                endpoint = `/anime/donghua/completed/${page}`;
+                endpoint = `/anime/donghua/completed/${document.getElementById('input_completed').value}`;
             }
             else if (type === 'schedule') {
                 endpoint = `/anime/donghua/schedule`;
             }
             else if (type === 'rumble') {
-                const url = document.getElementById('input_rumble').value;
+                // PENTING: Gunakan encodeURIComponent buat URL di parameter biar gak error
+                const url = encodeURIComponent(document.getElementById('input_rumble').value);
                 endpoint = `/anime/donghua/extract/rumble?url=${url}`;
             }
 
-            endpoint = endpoint.replace('//', '/');
+            // HAPUS KODE REPLACE YANG MERUSAK HTTPS://
+            // endpoint = endpoint.replace('//', '/');  <-- INI BIANG KEROKNYA
+
+            // Tapi kita perlu bersihin double slash di path (bukan di protokol https://)
+            // Jadi kita biarin browser/fetch yang handle, atau pake replace yg lebih aman:
+            // Cukup pastiin di atas gak ada double slash manual.
+            
             fetchApi(endpoint);
         }
 
@@ -255,11 +257,11 @@ Silakan klik tombol GO di kiri.
             const badge = document.getElementById('statusBadge');
             const routeDisplay = document.getElementById('activeRoute');
             
+            // Tampilkan endpoint relatif
             routeDisplay.innerText = endpoint;
             
-            // RESET CLASS DULU BIAR BERSIH
-            output.className = "bg-[#0d1117] border border-gray-700 rounded-lg p-3 text-[10px] text-yellow-400 overflow-y-auto h-[500px] w-full font-mono shadow-inner";
             output.innerText = "Loading...";
+            output.className = "bg-[#0d1117] border border-gray-700 rounded-lg p-3 text-[10px] text-yellow-400 h-[500px] overflow-y-auto shadow-inner";
             
             badge.innerText = "Fetching...";
             badge.className = "text-[10px] bg-yellow-900 text-yellow-200 px-2 py-1 rounded";
@@ -272,25 +274,16 @@ Silakan klik tombol GO di kiri.
 
                 output.innerText = JSON.stringify(data, null, 2);
                 
-                // CLASS SUKSES (HIJAU)
-                output.className = "bg-[#0d1117] border border-gray-700 rounded-lg p-3 text-[10px] text-green-400 overflow-y-auto h-[500px] w-full font-mono shadow-inner";
-                
+                output.className = "bg-[#0d1117] border border-gray-700 rounded-lg p-3 text-[10px] text-green-400 h-[500px] overflow-y-auto shadow-inner";
                 badge.innerText = `200 OK (${time}ms)`;
                 badge.className = "text-[10px] bg-green-900 text-green-200 px-2 py-1 rounded";
+
             } catch (e) {
                 output.innerText = e.message;
-                
-                // CLASS ERROR (MERAH)
-                output.className = "bg-[#0d1117] border border-gray-700 rounded-lg p-3 text-[10px] text-red-400 overflow-y-auto h-[500px] w-full font-mono shadow-inner";
-                
+                output.className = "bg-[#0d1117] border border-gray-700 rounded-lg p-3 text-[10px] text-red-400 h-[500px] overflow-y-auto shadow-inner";
                 badge.innerText = "Error";
                 badge.className = "text-[10px] bg-red-900 text-red-200 px-2 py-1 rounded";
             }
-        }
-
-        function copyRoute() {
-            const text = document.getElementById('activeRoute').innerText;
-            navigator.clipboard.writeText(text);
         }
 
         function copyJson() {
