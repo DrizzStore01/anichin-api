@@ -7,21 +7,24 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        /* BASE STYLING */
+        /* BASE RESET */
+        * { box-sizing: border-box; }
+        
         body { 
             font-family: 'JetBrains Mono', monospace; 
             background-color: #0d1117; 
             color: #c9d1d9; 
-            overflow-x: hidden; /* Mencegah geser kanan kiri */
             width: 100vw;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 1rem;
         }
 
-        /* CARD STYLING */
+        /* CARD & INPUT */
         .endpoint-card { border: 1px solid #30363d; transition: 0.2s; }
         .endpoint-card:hover { border-color: #58a6ff; }
         .method { font-size: 0.6rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; background: #238636; color: white; }
         
-        /* INPUT STYLING */
         input { 
             background: #010409; 
             border: 1px solid #30363d; 
@@ -30,11 +33,10 @@
             border-radius: 4px; 
             font-size: 12px; 
             width: 100%; 
-            transition: 0.2s; 
+            min-width: 0; /* Penting buat flex container */
         }
         input:focus { border-color: #58a6ff; outline: none; }
         
-        /* BUTTON STYLING */
         button.test-btn { 
             background: #1f6feb; 
             color: white; 
@@ -42,19 +44,31 @@
             padding: 6px 12px; 
             border-radius: 4px; 
             font-weight: bold; 
-            transition: 0.2s; 
             white-space: nowrap; 
-            cursor: pointer;
+            flex-shrink: 0;
         }
-        button.test-btn:hover { background: #388bfd; }
 
-        /* JSON OUTPUT FIX (INI OBATNYA) */
+        /* --- THE MAGIC CSS FOR JSON --- */
         pre#jsonOutput {
-            white-space: pre-wrap !important;       /* Jaga spasi tapi wrap */
-            word-wrap: break-word !important;       /* Patahkan kata */
-            word-break: break-all !important;       /* Patahkan link panjang */
-            overflow-x: hidden !important;          /* Hide scroll horizontal */
-            max-width: 100%;                        /* Batasi lebar */
+            white-space: pre-wrap;       /* Wrap text ke bawah */
+            word-wrap: break-word;       /* Patahkan kata panjang */
+            overflow-wrap: break-word;   /* Standar baru buat patah kata */
+            word-break: break-all;       /* Patahkan link URL tanpa ampun */
+            
+            font-size: 10px;
+            line-height: 1.4;
+            max-width: 100%;
+            overflow-x: hidden;          /* Matikan scroll samping */
+            
+            /* Reset Margin/Padding */
+            margin: 0; 
+        }
+
+        /* Container Output */
+        .output-container {
+            width: 100%;
+            max-width: 100%;
+            overflow: hidden; /* Penjaga terakhir */
         }
     </style>
 </head>
@@ -184,10 +198,10 @@
                     </div>
                 </div>
                 
-                <div class="relative group w-full">
+                <div class="relative group w-full output-container">
                     <button onclick="copyJson()" class="absolute top-2 right-2 bg-gray-700 hover:bg-gray-600 text-[10px] text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition z-10">Copy JSON</button>
-                    <!-- CONTAINER JSON UTAMA -->
-                    <pre id="jsonOutput" class="bg-[#0d1117] border border-gray-700 rounded-lg p-3 text-[10px] text-green-400 overflow-y-auto h-[500px] w-full font-mono shadow-inner">
+                    
+                    <pre id="jsonOutput" class="bg-[#0d1117] border border-gray-700 rounded-lg p-3 text-green-400 h-[500px] overflow-y-auto shadow-inner">
 Ready to test.
 Silakan klik tombol GO di kiri.
                     </pre>
