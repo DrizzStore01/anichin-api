@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, request, render_template
+from flask_cors import CORS
 import cloudscraper
 from bs4 import BeautifulSoup
 import base64
@@ -6,6 +7,7 @@ import re
 import json
 
 app = Flask(__name__)
+CORS(app)  # Allow all origins
 
 # Setup Scraper
 scraper = cloudscraper.create_scraper(browser={'browser': 'chrome', 'platform': 'android', 'desktop': False})
