@@ -1,4 +1,5 @@
 Flask
+flask-cors
 cloudscraper
 beautifulsoup4
 lxml
