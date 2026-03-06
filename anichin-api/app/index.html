@@ -1,173 +1,644 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anichin Private</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { background-color: #1a1a1a; color: #e0e0e0; }
-        .poster { aspect-ratio: 2/3; object-fit: cover; }
-        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        /* Loader sederhana */
-        #loader { display: none; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Anichin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0b0c10;
+      --surface: #13151c;
+      --surface2: #1c1e28;
+      --border: #252836;
+      --accent: #e63946;
+      --accent2: #ff6b6b;
+      --text: #e8eaf0;
+      --muted: #6b7280;
+      --radius: 14px;
+      --nav-h: 64px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    html, body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Sora', sans-serif;
+      min-height: 100dvh;
+      overflow-x: hidden;
+    }
+
+    /* ── TOPBAR ── */
+    #topbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(11,12,16,.92);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      height: 56px;
+    }
+
+    #topbar .logo {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      cursor: pointer;
+    }
+    #topbar .logo span { color: var(--accent); }
+
+    #topbar .search-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      max-width: 260px;
+      margin-left: 12px;
+    }
+
+    #searchInput {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      color: var(--text);
+      font-family: 'Sora', sans-serif;
+      font-size: 13px;
+      padding: 8px 14px;
+      outline: none;
+      transition: border .2s;
+    }
+    #searchInput:focus { border-color: var(--accent); }
+
+    #searchBtn {
+      background: var(--accent);
+      border: none;
+      border-radius: 99px;
+      color: #fff;
+      cursor: pointer;
+      font-family: 'Sora', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 8px 14px;
+      white-space: nowrap;
+      transition: opacity .15s;
+    }
+    #searchBtn:active { opacity: .75; }
+
+    /* ── BOTTOM NAV ── */
+    #bottomNav {
+      position: fixed;
+      bottom: 0;
+      left: 0; right: 0;
+      z-index: 100;
+      background: rgba(11,12,16,.96);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-top: 1px solid var(--border);
+      display: flex;
+      height: var(--nav-h);
+    }
+
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      cursor: pointer;
+      transition: color .15s;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 600;
+      border: none;
+      background: none;
+      font-family: 'Sora', sans-serif;
+    }
+    .nav-item svg { width: 22px; height: 22px; }
+    .nav-item.active { color: var(--accent); }
+
+    /* ── MAIN ── */
+    #app {
+      padding: 16px 14px calc(var(--nav-h) + 16px);
+      max-width: 540px;
+      margin: 0 auto;
+    }
+
+    /* ── SECTION TITLE ── */
+    .section-title {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-title::before {
+      content: '';
+      display: block;
+      width: 4px; height: 18px;
+      background: var(--accent);
+      border-radius: 4px;
+    }
+
+    /* ── GRID CARDS ── */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      overflow: hidden;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      transition: transform .18s, border-color .18s;
+      -webkit-user-select: none;
+    }
+    .card:active { transform: scale(.96); border-color: var(--accent); }
+
+    .card-poster {
+      width: 100%;
+      aspect-ratio: 2/3;
+      object-fit: cover;
+      display: block;
+      background: var(--surface2);
+    }
+
+    .card-badge {
+      position: absolute;
+      top: 6px; right: 6px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 6px;
+      line-height: 1.4;
+    }
+
+    .card-poster-wrap { position: relative; }
+
+    .card-info {
+      padding: 8px;
+    }
+    .card-info h3 {
+      font-size: 11px;
+      font-weight: 600;
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* ── DETAIL PAGE ── */
+    .detail-hero {
+      display: flex;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .detail-poster {
+      width: 120px;
+      min-width: 120px;
+      border-radius: 12px;
+      aspect-ratio: 2/3;
+      object-fit: cover;
+      background: var(--surface2);
+    }
+    .detail-meta { flex: 1; min-width: 0; }
+    .detail-title {
+      font-size: 16px;
+      font-weight: 800;
+      line-height: 1.3;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+    .detail-badge-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+    .badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 99px;
+      background: var(--surface2);
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+    .badge.red { background: rgba(230,57,70,.15); color: var(--accent2); border-color: rgba(230,57,70,.3); }
+
+    .synopsis-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.7;
+      max-height: 120px;
+      overflow-y: auto;
+      margin-bottom: 18px;
+    }
+
+    .ep-list-title {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: var(--text);
+    }
+
+    .ep-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      max-height: 320px;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+    .ep-grid::-webkit-scrollbar { width: 3px; }
+    .ep-grid::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    .ep-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      cursor: pointer;
+      font-family: 'Sora', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 10px 8px;
+      text-align: left;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: background .15s, border-color .15s;
+    }
+    .ep-btn:active { background: rgba(230,57,70,.15); border-color: var(--accent); }
+
+    /* ── PLAYER PAGE ── */
+    .player-wrap {
+      background: #000;
+      border-radius: var(--radius);
+      overflow: hidden;
+      aspect-ratio: 16/9;
+      margin-bottom: 14px;
+      border: 1px solid var(--border);
+    }
+    .player-wrap iframe {
+      width: 100%; height: 100%;
+      border: none;
+      display: block;
+    }
+
+    .player-title {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      line-height: 1.4;
+    }
+
+    .server-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+    }
+    .server-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      margin-bottom: 10px;
+    }
+    .server-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+    .server-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      cursor: pointer;
+      font-family: 'Sora', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 8px 14px;
+      transition: background .15s, border-color .15s;
+    }
+    .server-btn:active, .server-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    /* ── BACK BTN ── */
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      color: var(--text);
+      cursor: pointer;
+      font-family: 'Sora', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 8px 14px;
+      margin-bottom: 16px;
+      transition: opacity .15s;
+    }
+    .back-btn:active { opacity: .7; }
+
+    /* ── LOADER ── */
+    #loader {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(11,12,16,.85);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+    }
+    .spinner {
+      width: 44px; height: 44px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── EMPTY STATE ── */
+    .empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .empty-icon { font-size: 40px; margin-bottom: 12px; }
+
+    /* scrollbar global */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  </style>
 </head>
-<body class="font-sans min-h-screen pb-10">
+<body>
 
-    <!-- HEADER -->
-    <nav class="sticky top-0 z-50 bg-black/90 backdrop-blur border-b border-gray-700 p-4 flex justify-between items-center">
-        <h1 class="text-xl font-bold text-red-500 cursor-pointer" onclick="loadHome()">ANICHIN<span class="text-white">.VIP</span></h1>
-        <div class="flex gap-2">
-            <input type="text" id="searchInput" placeholder="Cari anime..." class="bg-gray-800 text-sm px-3 py-1 rounded focus:outline-none border border-gray-600">
-            <button onclick="doSearch()" class="bg-red-600 px-3 py-1 rounded text-sm font-bold">Cari</button>
-        </div>
-    </nav>
-
-    <!-- CONTAINER UTAMA -->
-    <main id="app" class="p-4 max-w-4xl mx-auto">
-        <!-- Disini konten bakal muncul otomatis lewat JS -->
-    </main>
-
-    <!-- LOADING INDICATOR -->
-    <div id="loader" class="fixed inset-0 bg-black/80 flex justify-center items-center z-[60]">
-        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-red-500"></div>
+  <!-- TOPBAR -->
+  <nav id="topbar">
+    <div class="logo" onclick="loadHome()"><span>ANI</span>CHIN</div>
+    <div class="search-wrap">
+      <input type="text" id="searchInput" placeholder="Cari anime..." onkeydown="if(event.key==='Enter')doSearch()" />
+      <button id="searchBtn" onclick="doSearch()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      </button>
     </div>
+  </nav>
 
-    <!-- JAVASCRIPT LOGIC -->
-    <script>
-        const API_BASE = '/api'; // Nembak ke API Flask sendiri
+  <!-- MAIN CONTENT -->
+  <main id="app"></main>
 
-        // Fungsi Helper: Show/Hide Loading
-        const showLoading = () => document.getElementById('loader').style.display = 'flex';
-        const hideLoading = () => document.getElementById('loader').style.display = 'none';
+  <!-- BOTTOM NAV -->
+  <nav id="bottomNav">
+    <button class="nav-item active" id="nav-home" onclick="loadHome()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9.5 12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5Z"/><path d="M9 21V12h6v9"/></svg>
+      Home
+    </button>
+    <button class="nav-item" id="nav-completed" onclick="loadCompleted()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      Selesai
+    </button>
+    <button class="nav-item" id="nav-schedule" onclick="loadSchedule()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Jadwal
+    </button>
+  </nav>
 
-        // 1. LOAD HOME
-        async function loadHome() {
-            showLoading();
-            try {
-                const res = await fetch(`${API_BASE}/home`);
-                const json = await res.json();
-                renderGrid(json.data, "Update Terbaru");
-            } catch (e) { alert("Gagal muat data home"); }
-            hideLoading();
+  <!-- LOADER -->
+  <div id="loader"><div class="spinner"></div></div>
+
+  <script>
+    const API = '';
+    const show = () => document.getElementById('loader').style.display = 'flex';
+    const hide = () => document.getElementById('loader').style.display = 'none';
+
+    function setNav(id) {
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      const el = document.getElementById(id);
+      if (el) el.classList.add('active');
+    }
+
+    // ─── HOME ───
+    async function loadHome() {
+      setNav('nav-home');
+      show();
+      try {
+        const res = await fetch(`${API}/donghua/home/1`);
+        const json = await res.json();
+        renderGrid(json.latest_release || [], 'Update Terbaru');
+      } catch { renderEmpty('Gagal memuat data.'); }
+      hide();
+    }
+
+    // ─── SEARCH ───
+    async function doSearch() {
+      const q = document.getElementById('searchInput').value.trim();
+      if (!q) return;
+      setNav('');
+      show();
+      try {
+        const res = await fetch(`${API}/donghua/search/${encodeURIComponent(q)}/1`);
+        const json = await res.json();
+        renderGrid(json.data || [], `Hasil: "${q}"`);
+      } catch { renderEmpty('Gagal melakukan pencarian.'); }
+      hide();
+    }
+
+    // ─── COMPLETED ───
+    async function loadCompleted() {
+      setNav('nav-completed');
+      show();
+      try {
+        const res = await fetch(`${API}/donghua/completed/1`);
+        const json = await res.json();
+        renderGrid(json.completed_donghua || [], 'Donghua Selesai');
+      } catch { renderEmpty('Gagal memuat data.'); }
+      hide();
+    }
+
+    // ─── SCHEDULE ───
+    async function loadSchedule() {
+      setNav('nav-schedule');
+      show();
+      try {
+        const res = await fetch(`${API}/donghua/schedule`);
+        const json = await res.json();
+        renderSchedule(json.schedule || []);
+      } catch { renderEmpty('Gagal memuat jadwal.'); }
+      hide();
+    }
+
+    // ─── RENDER GRID ───
+    function renderGrid(data, title) {
+      const app = document.getElementById('app');
+      if (!data.length) { renderEmpty('Tidak ada data ditemukan.'); return; }
+
+      let html = `<p class="section-title">${title}</p><div class="grid">`;
+      data.forEach(item => {
+        const poster = item.poster || '';
+        const ep = item.current_episode || item.status || '';
+        const isEpisode = item.href && item.href.includes('/episode/');
+        const fn = isEpisode ? `loadWatch('${esc(item.slug)}')` : `loadDetail('${esc(item.slug)}')`;
+
+        html += `
+        <div class="card" onclick="${fn}">
+          <div class="card-poster-wrap">
+            <img class="card-poster" src="${poster}" alt="" loading="lazy" onerror="this.style.background='#1c1e28'">
+            ${ep ? `<span class="card-badge">${ep}</span>` : ''}
+          </div>
+          <div class="card-info"><h3>${item.title || ''}</h3></div>
+        </div>`;
+      });
+      html += '</div>';
+      app.innerHTML = html;
+    }
+
+    // ─── RENDER SCHEDULE ───
+    function renderSchedule(schedule) {
+      const app = document.getElementById('app');
+      const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+      const today = days[new Date().getDay()];
+
+      let html = `<p class="section-title">Jadwal Rilis</p>`;
+      schedule.forEach(d => {
+        const isToday = d.day === today;
+        html += `
+        <div style="margin-bottom:20px">
+          <p style="font-size:12px;font-weight:700;color:${isToday ? 'var(--accent)' : 'var(--muted)'};margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">${isToday ? '🔴 ' : ''}${d.day}</p>
+          <div class="grid">`;
+        d.anime_list.forEach(item => {
+          const isEpisode = item.href && item.href.includes('/episode/');
+          const fn = isEpisode ? `loadWatch('${esc(item.slug)}')` : `loadDetail('${esc(item.slug)}')`;
+          html += `
+          <div class="card" onclick="${fn}">
+            <div class="card-poster-wrap">
+              <img class="card-poster" src="${item.poster}" alt="" loading="lazy" onerror="this.style.background='#1c1e28'">
+              <span class="card-badge">${item.time || '?'}</span>
+            </div>
+            <div class="card-info"><h3>${item.title}</h3></div>
+          </div>`;
+        });
+        html += '</div></div>';
+      });
+      app.innerHTML = html;
+    }
+
+    // ─── DETAIL ───
+    async function loadDetail(slug) {
+      show();
+      try {
+        const res = await fetch(`${API}/donghua/detail/${slug}`);
+        const d = await res.json();
+
+        let html = `
+        <button class="back-btn" onclick="loadHome()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+          Kembali
+        </button>
+        <div class="detail-hero">
+          <img class="detail-poster" src="${d.poster}" alt="" onerror="this.style.background='#1c1e28'">
+          <div class="detail-meta">
+            <h2 class="detail-title">${d.title}</h2>
+            <div class="detail-badge-row">
+              <span class="badge red">${d.status}</span>
+              <span class="badge">${d.type}</span>
+              <span class="badge">⭐ ${d.rating}</span>
+              <span class="badge">${d.episodes_count} Eps</span>
+            </div>
+            <div class="detail-badge-row">
+              ${(d.genres || []).slice(0,4).map(g=>`<span class="badge">${g.name}</span>`).join('')}
+            </div>
+          </div>
+        </div>
+        <div class="synopsis-box">${d.synopsis || 'Tidak ada sinopsis.'}</div>
+        <p class="ep-list-title">Episode (${d.episodes_count})</p>
+        <div class="ep-grid">`;
+
+        (d.episodes_list || []).forEach(ep => {
+          html += `<button class="ep-btn" onclick="loadWatch('${esc(ep.slug)}')">${ep.episode}</button>`;
+        });
+
+        html += '</div>';
+        document.getElementById('app').innerHTML = html;
+      } catch { renderEmpty('Gagal memuat detail.'); }
+      hide();
+    }
+
+    // ─── WATCH ───
+    async function loadWatch(slug) {
+      show();
+      try {
+        const res = await fetch(`${API}/donghua/episode/${slug}`);
+        const json = await res.json();
+
+        const servers = json.streaming?.servers || [];
+        const main = json.streaming?.main_url;
+
+        if (!main) {
+          renderEmpty('Link video tidak tersedia.');
+          hide(); return;
         }
 
-        // 2. SEARCH
-        async function doSearch() {
-            const query = document.getElementById('searchInput').value;
-            if(!query) return;
-            showLoading();
-            try {
-                const res = await fetch(`${API_BASE}/search?query=${query}`);
-                const json = await res.json();
-                renderGrid(json.data, `Hasil cari: ${query}`);
-            } catch (e) { alert("Gagal cari data"); }
-            hideLoading();
-        }
+        let html = `
+        <button class="back-btn" onclick="history.go(-1)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+          Kembali
+        </button>
+        <div class="player-wrap">
+          <iframe id="playerFrame" src="${main.url}" allowfullscreen referrerpolicy="no-referrer"></iframe>
+        </div>
+        <p class="player-title">${json.episode}</p>
+        <div class="server-box">
+          <p class="server-label">Pilih Server</p>
+          <div class="server-btns">
+            ${servers.map((s,i) => `
+              <button class="server-btn${i===0?' active':''}" onclick="switchServer(this,'${esc(s.url)}')">${s.name}</button>
+            `).join('')}
+          </div>
+        </div>`;
 
-        // RENDER GRID (Tampilan Kotak-kotak Anime)
-        function renderGrid(data, title) {
-            const app = document.getElementById('app');
-            let html = `<h2 class="text-lg font-bold mb-4 border-l-4 border-red-500 pl-3">${title}</h2>`;
-            html += `<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">`;
-            
-            data.forEach(item => {
-                // Tentukan aksi klik berdasarkan tipe (anime/episode)
-                // Kalau di home biasanya link ke episode nonton langsung, kalau search bisa ke detail anime
-                const clickAction = item.slug.includes('episode') 
-                    ? `loadWatch('${item.slug}')` 
-                    : `loadDetail('${item.slug}')`;
+        document.getElementById('app').innerHTML = html;
+      } catch { renderEmpty('Gagal memuat episode.'); }
+      hide();
+    }
 
-                html += `
-                <div onclick="${clickAction}" class="bg-gray-800 rounded-lg overflow-hidden cursor-pointer hover:scale-105 transition duration-200">
-                    <div class="relative">
-                        <img src="${item.thumb}" class="w-full poster" alt="${item.title}">
-                        <span class="absolute top-0 right-0 bg-red-600 text-xs px-2 py-1 font-bold">${item.episode || item.status || 'SUB'}</span>
-                    </div>
-                    <div class="p-2">
-                        <h3 class="text-sm font-semibold line-clamp-2">${item.title}</h3>
-                    </div>
-                </div>`;
-            });
-            html += `</div>`;
-            app.innerHTML = html;
-        }
+    function switchServer(btn, url) {
+      document.querySelectorAll('.server-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('playerFrame').src = url;
+    }
 
-        // 3. LOAD DETAIL ANIME
-        async function loadDetail(slug) {
-            showLoading();
-            try {
-                const res = await fetch(`${API_BASE}/detail?slug=${slug}`);
-                const json = await res.json();
-                const d = json.data;
+    function renderEmpty(msg) {
+      document.getElementById('app').innerHTML = `
+      <div class="empty">
+        <div class="empty-icon">📭</div>
+        <p>${msg}</p>
+      </div>`;
+    }
 
-                let html = `
-                <button onclick="loadHome()" class="mb-4 bg-gray-700 px-3 py-1 rounded text-xs">← Kembali</button>
-                <div class="flex flex-col md:flex-row gap-4 mb-6 bg-gray-800 p-4 rounded-lg">
-                    <img src="${d.thumb}" class="w-40 rounded shadow-lg mx-auto md:mx-0">
-                    <div>
-                        <h2 class="text-xl font-bold mb-2 text-red-400">${d.title}</h2>
-                        <p class="text-xs text-gray-400 mb-2">${JSON.stringify(d.info).replace(/["{}]/g, '').replace(/,/g, ' | ')}</p>
-                        <p class="text-sm text-gray-300 leading-relaxed h-32 overflow-y-auto">${d.synopsis}</p>
-                    </div>
-                </div>
-                <h3 class="font-bold mb-2">Daftar Episode</h3>
-                <div class="grid grid-cols-2 gap-2 h-96 overflow-y-auto pr-1">`;
+    function esc(s) { return (s || '').replace(/'/g, "\\'"); }
 
-                d.episode_list.forEach(ep => {
-                    html += `
-                    <button onclick="loadWatch('${ep.slug}')" class="bg-gray-700 hover:bg-red-600 p-2 rounded text-xs text-left truncate transition">
-                        ${ep.title}
-                    </button>`;
-                });
-
-                html += `</div>`;
-                document.getElementById('app').innerHTML = html;
-
-            } catch (e) { alert("Error detail"); }
-            hideLoading();
-        }
-
-        // 4. LOAD PLAYER (NONTON)
-        async function loadWatch(slug) {
-            showLoading();
-            try {
-                const res = await fetch(`${API_BASE}/episode?slug=${slug}`);
-                const json = await res.json();
-                
-                // Cari server default (Ok.ru) atau yang pertama ketemu
-                const video = json.videos.find(v => v.server.toLowerCase().includes('ok.ru')) || json.videos[0];
-
-                if(!video) {
-                    alert("Link video tidak ditemukan/mati!");
-                    hideLoading();
-                    return;
-                }
-
-                let html = `
-                <button onclick="loadHome()" class="mb-4 bg-gray-700 px-3 py-1 rounded text-xs">← Home</button>
-                <div class="bg-black rounded-lg overflow-hidden aspect-video shadow-2xl mb-4 border border-gray-700">
-                    <iframe src="${video.url}" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
-                </div>
-                <h2 class="text-lg font-bold text-red-400 mb-4">${json.title}</h2>
-                <div class="bg-gray-800 p-3 rounded">
-                    <p class="text-xs text-gray-400 mb-2">Server saat ini: <span class="text-white font-bold">${video.server}</span></p>
-                    <div class="flex gap-2 flex-wrap">
-                        ${json.videos.map(v => 
-                            `<button onclick="document.querySelector('iframe').src='${v.url}'" class="bg-gray-700 px-3 py-1 text-xs rounded hover:bg-red-500">${v.server}</button>`
-                        ).join('')}
-                    </div>
-                </div>
-                `;
-                document.getElementById('app').innerHTML = html;
-
-            } catch (e) { alert("Error episode"); }
-            hideLoading();
-        }
-
-        // Jalanin saat pertama kali buka
-        loadHome();
-    </script>
+    loadHome();
+  </script>
 </body>
 </html>
