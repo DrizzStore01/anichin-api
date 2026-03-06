@@ -1,644 +1,441 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Anichin</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet" />
-  <style>
-    :root {
-      --bg: #0b0c10;
-      --surface: #13151c;
-      --surface2: #1c1e28;
-      --border: #252836;
-      --accent: #e63946;
-      --accent2: #ff6b6b;
-      --text: #e8eaf0;
-      --muted: #6b7280;
-      --radius: 14px;
-      --nav-h: 64px;
-    }
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"/>
+<meta name="theme-color" content="#000"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<title>Anichin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#000;--bg1:#0a0a0b;--bg2:#111113;--bg3:#18181b;--bg4:#1f1f23;
+  --glass:rgba(255,255,255,.042);--glassH:rgba(255,255,255,.075);
+  --b0:rgba(255,255,255,.055);--b1:rgba(255,255,255,.10);--b2:rgba(255,255,255,.18);
+  --blue:#3b82f6;--blueL:#60a5fa;--red:#ef4444;--green:#22c55e;
+  --amber:#f59e0b;--purple:#a855f7;--teal:#14b8a6;
+  --t1:#fafafa;--t2:#a1a1aa;--t3:#52525b;--t4:#3f3f46;
+  --r:14px;--rsm:10px;--rxs:7px;
+  --nav:60px;--top:54px;
+  --ease:cubic-bezier(.4,0,.2,1);--spring:cubic-bezier(.34,1.56,.64,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--t1);font-family:'Inter',-apple-system,sans-serif;min-height:100dvh;overflow-x:hidden;overscroll-behavior:none;-webkit-font-smoothing:antialiased;}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 80% 45% at 20% -5%,rgba(59,130,246,.11) 0%,transparent 65%),
+  radial-gradient(ellipse 55% 40% at 80% 110%,rgba(168,85,247,.07) 0%,transparent 60%);}
+::-webkit-scrollbar{width:3px;height:3px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--b1);border-radius:4px;}
 
-    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+/* TOPBAR */
+#topbar{position:fixed;top:0;left:0;right:0;height:var(--top);z-index:200;display:flex;align-items:center;gap:10px;padding:0 14px;
+  background:rgba(0,0,0,.82);backdrop-filter:blur(32px) saturate(2);-webkit-backdrop-filter:blur(32px) saturate(2);border-bottom:1px solid var(--b0);}
+.logo{font-size:17px;font-weight:900;letter-spacing:-.5px;cursor:pointer;flex-shrink:0;user-select:none;
+  background:linear-gradient(130deg,#fff 30%,var(--blueL));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.spill{flex:1;display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--b0);border-radius:99px;padding:0 5px 0 11px;transition:border-color .2s;}
+.spill:focus-within{border-color:var(--blue);}
+.spill svg{color:var(--t3);flex-shrink:0;}
+.spill input{flex:1;min-width:0;background:none;border:none;outline:none;color:var(--t1);font-family:'Inter',sans-serif;font-size:13px;padding:9px 0;}
+.spill input::placeholder{color:var(--t3);}
+.sgo{background:var(--blue);border:none;border-radius:99px;color:#fff;cursor:pointer;font-family:inherit;font-size:11px;font-weight:700;padding:6px 14px;white-space:nowrap;transition:opacity .15s,transform .12s var(--spring);}
+.sgo:active{opacity:.8;transform:scale(.94);}
 
-    html, body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Sora', sans-serif;
-      min-height: 100dvh;
-      overflow-x: hidden;
-    }
+/* BOTTOM NAV */
+#botnav{position:fixed;bottom:0;left:0;right:0;height:calc(var(--nav) + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);z-index:200;display:flex;
+  background:rgba(0,0,0,.88);backdrop-filter:blur(32px) saturate(2);-webkit-backdrop-filter:blur(32px) saturate(2);border-top:1px solid var(--b0);}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:none;border:none;cursor:pointer;color:var(--t3);font-family:inherit;font-size:9.5px;font-weight:600;letter-spacing:.1px;transition:color .15s;padding:0;}
+.nb svg{transition:transform .22s var(--spring);}
+.nb.on{color:var(--blueL);}
+.nb.on svg{transform:scale(1.12);}
 
-    /* ── TOPBAR ── */
-    #topbar {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background: rgba(11,12,16,.92);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 16px;
-      height: 56px;
-    }
+/* MAIN */
+#app{position:relative;z-index:1;padding:calc(var(--top) + 14px) 13px calc(var(--nav) + env(safe-area-inset-bottom) + 14px);max-width:560px;margin:0 auto;}
 
-    #topbar .logo {
-      font-size: 20px;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      cursor: pointer;
-    }
-    #topbar .logo span { color: var(--accent); }
+/* SECTION HEADER */
+.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.sh-title{font-size:15px;font-weight:800;letter-spacing:-.3px;display:flex;align-items:center;gap:7px;}
+.sh-title::before{content:'';display:block;width:3px;height:15px;background:linear-gradient(to bottom,var(--blue),var(--purple));border-radius:3px;}
 
-    #topbar .search-wrap {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex: 1;
-      max-width: 260px;
-      margin-left: 12px;
-    }
+/* HERO */
+.hero{position:relative;border-radius:var(--r);overflow:hidden;aspect-ratio:16/9;margin-bottom:20px;cursor:pointer;animation:fadeUp .3s var(--ease) both;}
+.hero img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .35s var(--ease);}
+.hero:active img{transform:scale(1.03);}
+.hero-grad{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.95) 0%,rgba(0,0,0,.4) 45%,rgba(0,0,0,.1) 100%);display:flex;flex-direction:column;justify-content:flex-end;padding:16px;}
+.hero-tag{display:inline-flex;align-items:center;gap:5px;background:var(--red);color:#fff;font-size:9px;font-weight:800;letter-spacing:.8px;padding:3px 10px;border-radius:99px;margin-bottom:8px;width:fit-content;text-transform:uppercase;}
+.live-dot{width:5px;height:5px;border-radius:50%;background:#fff;animation:pulse 1.4s infinite;}
+.hero-title{font-size:19px;font-weight:800;letter-spacing:-.4px;line-height:1.18;margin-bottom:5px;text-shadow:0 2px 16px rgba(0,0,0,.6);}
+.hero-sub{font-size:11.5px;color:rgba(255,255,255,.55);}
+.hero-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:52px;height:52px;border-radius:50%;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1.5px solid rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;transition:transform .2s var(--spring),opacity .2s;opacity:0;}
+.hero:active .hero-play{opacity:1;transform:translate(-50%,-50%) scale(1.08);}
 
-    #searchInput {
-      flex: 1;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 99px;
-      color: var(--text);
-      font-family: 'Sora', sans-serif;
-      font-size: 13px;
-      padding: 8px 14px;
-      outline: none;
-      transition: border .2s;
-    }
-    #searchInput:focus { border-color: var(--accent); }
+/* GRID + CARDS */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;}
+.card{background:var(--bg2);border:1px solid var(--b0);border-radius:var(--r);overflow:hidden;cursor:pointer;animation:fadeUp .3s var(--ease) both;transition:transform .18s var(--ease),border-color .18s,box-shadow .18s;}
+.card:active{transform:scale(.93);border-color:var(--blue);box-shadow:0 0 0 1px rgba(59,130,246,.3);}
+.card-img{position:relative;aspect-ratio:2/3;background:var(--bg3);overflow:hidden;}
+.card-img img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s var(--ease);}
+.card:active .card-img img{transform:scale(1.05);}
+.ep-tag{position:absolute;bottom:5px;left:5px;right:5px;display:flex;}
+.ep-chip{background:rgba(0,0,0,.7);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.1);color:#fff;font-size:8.5px;font-weight:700;padding:2px 7px;border-radius:var(--rxs);max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.card-body{padding:8px 9px 10px;}
+.card-title{font-size:11px;font-weight:600;line-height:1.4;color:var(--t1);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
 
-    #searchBtn {
-      background: var(--accent);
-      border: none;
-      border-radius: 99px;
-      color: #fff;
-      cursor: pointer;
-      font-family: 'Sora', sans-serif;
-      font-size: 12px;
-      font-weight: 700;
-      padding: 8px 14px;
-      white-space: nowrap;
-      transition: opacity .15s;
-    }
-    #searchBtn:active { opacity: .75; }
+/* DETAIL */
+.dt-banner{position:relative;border-radius:var(--r);overflow:hidden;aspect-ratio:16/9;animation:fadeUp .3s var(--ease) both;}
+.dt-banner img{width:100%;height:100%;object-fit:cover;filter:brightness(.4);}
+.dt-banner-grad{position:absolute;inset:0;background:linear-gradient(to top,var(--bg) 0%,transparent 70%);}
+.dt-info{display:flex;gap:13px;padding:0 2px 16px;margin-top:-48px;position:relative;z-index:2;animation:fadeUp .3s .04s var(--ease) both;}
+.dt-poster{width:80px;min-width:80px;aspect-ratio:2/3;border-radius:10px;object-fit:cover;border:2px solid rgba(255,255,255,.12);box-shadow:0 8px 40px rgba(0,0,0,.5);flex-shrink:0;}
+.dt-meta{flex:1;min-width:0;padding-top:48px;}
+.dt-title{font-size:17px;font-weight:800;letter-spacing:-.4px;line-height:1.2;margin-bottom:4px;}
+.dt-alt{font-size:11px;color:var(--t2);margin-bottom:10px;}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;animation:fadeUp .3s .06s var(--ease) both;}
+.chip{font-size:10px;font-weight:600;padding:3px 10px;border-radius:99px;background:var(--bg3);border:1px solid var(--b0);color:var(--t2);}
+.chip.b{background:rgba(59,130,246,.12);color:var(--blueL);border-color:rgba(59,130,246,.2);}
+.chip.g{background:rgba(34,197,94,.12);color:var(--green);border-color:rgba(34,197,94,.2);}
+.chip.r{background:rgba(239,68,68,.12);color:#f87171;border-color:rgba(239,68,68,.2);}
+.chip.a{background:rgba(245,158,11,.12);color:#fbbf24;border-color:rgba(245,158,11,.2);}
+.synopsis{font-size:12.5px;color:var(--t2);line-height:1.75;background:var(--glass);border:1px solid var(--b0);border-radius:var(--r);padding:13px;max-height:108px;overflow-y:auto;margin-bottom:18px;animation:fadeUp .3s .08s var(--ease) both;}
+.ep-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;animation:fadeUp .3s .1s var(--ease) both;}
+.ep-bar-title{font-size:13.5px;font-weight:700;}
+.ep-flip-btn{display:flex;align-items:center;gap:5px;background:var(--bg3);border:1px solid var(--b0);border-radius:var(--rsm);color:var(--t2);font-family:inherit;font-size:10.5px;font-weight:600;padding:5px 10px;cursor:pointer;transition:border-color .15s,color .15s;}
+.ep-flip-btn:hover{border-color:var(--blue);color:var(--blueL);}
+.ep-list{display:grid;grid-template-columns:1fr 1fr;gap:6px;max-height:290px;overflow-y:auto;padding-right:2px;animation:fadeUp .3s .12s var(--ease) both;}
+.ep-item{background:var(--bg2);border:1px solid var(--b0);border-radius:var(--rsm);color:var(--t1);cursor:pointer;font-family:inherit;font-size:11px;font-weight:600;padding:10px 11px;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:background .13s,border-color .13s,transform .12s;}
+.ep-item:active{background:rgba(59,130,246,.13);border-color:var(--blue);transform:scale(.96);}
 
-    /* ── BOTTOM NAV ── */
-    #bottomNav {
-      position: fixed;
-      bottom: 0;
-      left: 0; right: 0;
-      z-index: 100;
-      background: rgba(11,12,16,.96);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border-top: 1px solid var(--border);
-      display: flex;
-      height: var(--nav-h);
-    }
+/* PLAYER */
+.player-wrap{background:#000;border-radius:var(--r);overflow:hidden;aspect-ratio:16/9;margin-bottom:12px;border:1px solid var(--b0);box-shadow:0 16px 64px rgba(0,0,0,.8);animation:fadeUp .28s var(--ease) both;}
+.player-wrap iframe{width:100%;height:100%;border:none;display:block;}
+.player-meta{margin-bottom:12px;animation:fadeUp .28s .04s var(--ease) both;}
+.player-show{font-size:11px;font-weight:700;color:var(--blueL);margin-bottom:3px;letter-spacing:.1px;}
+.player-ep-title{font-size:15px;font-weight:700;letter-spacing:-.2px;line-height:1.3;}
+.scard{background:var(--glass);border:1px solid var(--b0);border-radius:var(--r);padding:13px;margin-bottom:10px;}
+.scard-label{font-size:9.5px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.srv-row{display:flex;flex-wrap:wrap;gap:6px;}
+.srv-btn{background:var(--bg3);border:1px solid var(--b0);border-radius:var(--rsm);color:var(--t2);cursor:pointer;font-family:inherit;font-size:11.5px;font-weight:600;padding:8px 14px;transition:all .15s;}
+.srv-btn:active{transform:scale(.95);}
+.srv-btn.on{background:var(--blue);border-color:var(--blue);color:#fff;}
+.ep-nav-pair{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;animation:fadeUp .28s .1s var(--ease) both;}
+.nav-ep-btn{background:var(--bg2);border:1px solid var(--b0);border-radius:var(--r);padding:11px 13px;cursor:pointer;font-family:inherit;transition:border-color .15s,background .15s;}
+.nav-ep-btn:disabled{opacity:.28;cursor:default;}
+.nav-ep-btn:not(:disabled):active{background:var(--glassH);border-color:var(--b1);}
+.nav-dir{font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;display:flex;align-items:center;gap:4px;}
+.nav-ep-name{font-size:11.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dl-row{display:flex;flex-wrap:wrap;gap:6px;}
+.dl-chip{display:inline-flex;align-items:center;gap:5px;background:var(--bg3);border:1px solid var(--b0);border-radius:var(--rsm);color:var(--t1);font-size:11px;font-weight:600;padding:7px 12px;text-decoration:none;transition:border-color .13s,background .13s;}
+.dl-chip:active{background:rgba(59,130,246,.1);border-color:var(--blue);}
+.dl-q-head{font-size:10px;font-weight:700;color:var(--t3);margin-bottom:7px;margin-top:10px;}
+.dl-q-head:first-child{margin-top:0;}
 
-    .nav-item {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-      cursor: pointer;
-      transition: color .15s;
-      color: var(--muted);
-      font-size: 10px;
-      font-weight: 600;
-      border: none;
-      background: none;
-      font-family: 'Sora', sans-serif;
-    }
-    .nav-item svg { width: 22px; height: 22px; }
-    .nav-item.active { color: var(--accent); }
+/* SCHEDULE */
+.sched-block{margin-bottom:20px;animation:fadeUp .3s var(--ease) both;}
+.sched-day-head{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--t3);margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.sched-day-head.today{color:var(--blueL);}
+.today-pip{width:6px;height:6px;background:var(--blueL);border-radius:50%;animation:pulse 1.4s infinite;}
+.sched-scroll{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;}
+.sched-scroll::-webkit-scrollbar{height:0;}
+.sched-card{flex-shrink:0;width:95px;background:var(--bg2);border:1px solid var(--b0);border-radius:var(--r);overflow:hidden;cursor:pointer;transition:transform .17s var(--ease),border-color .17s;}
+.sched-card:active{transform:scale(.93);border-color:var(--blue);}
+.sched-card img{width:100%;aspect-ratio:2/3;object-fit:cover;display:block;background:var(--bg3);}
+.sched-card-info{padding:6px 7px 8px;}
+.sched-card-title{font-size:10px;font-weight:600;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.sched-time{font-size:9px;color:var(--blueL);font-weight:700;margin-top:3px;}
 
-    /* ── MAIN ── */
-    #app {
-      padding: 16px 14px calc(var(--nav-h) + 16px);
-      max-width: 540px;
-      margin: 0 auto;
-    }
+/* BACK BUTTON */
+.back-btn{display:inline-flex;align-items:center;gap:6px;background:var(--glass);border:1px solid var(--b0);border-radius:99px;color:var(--t1);cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;padding:7px 14px;margin-bottom:14px;animation:fadeUp .28s var(--ease) both;transition:opacity .15s;}
+.back-btn:active{opacity:.65;}
 
-    /* ── SECTION TITLE ── */
-    .section-title {
-      font-size: 15px;
-      font-weight: 700;
-      margin-bottom: 14px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .section-title::before {
-      content: '';
-      display: block;
-      width: 4px; height: 18px;
-      background: var(--accent);
-      border-radius: 4px;
-    }
+/* LOAD MORE */
+.load-more{width:100%;margin-top:16px;background:var(--bg2);border:1px solid var(--b0);border-radius:var(--r);color:var(--t2);cursor:pointer;font-family:inherit;font-size:12.5px;font-weight:600;padding:13px;display:flex;align-items:center;justify-content:center;gap:7px;transition:background .15s,border-color .15s;}
+.load-more:active{background:var(--glassH);border-color:var(--b1);}
 
-    /* ── GRID CARDS ── */
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-    }
+/* LOADER */
+#loader{display:none;position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.72);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);align-items:center;justify-content:center;flex-direction:column;gap:13px;}
+.spin{width:40px;height:40px;border:2.5px solid var(--b1);border-top-color:var(--blue);border-radius:50%;animation:spin .55s linear infinite;}
+.spin-label{font-size:12px;font-weight:600;color:var(--t3);}
 
-    .card {
-      background: var(--surface);
-      border-radius: var(--radius);
-      overflow: hidden;
-      cursor: pointer;
-      border: 1px solid var(--border);
-      transition: transform .18s, border-color .18s;
-      -webkit-user-select: none;
-    }
-    .card:active { transform: scale(.96); border-color: var(--accent); }
+/* TOAST */
+#toast{position:fixed;bottom:calc(var(--nav) + env(safe-area-inset-bottom) + 10px);left:50%;transform:translateX(-50%) translateY(14px);background:rgba(28,28,30,.97);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--b1);border-radius:var(--rsm);color:var(--t1);font-size:12px;font-weight:600;padding:9px 18px;z-index:500;opacity:0;transition:opacity .22s,transform .22s;pointer-events:none;white-space:nowrap;}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
 
-    .card-poster {
-      width: 100%;
-      aspect-ratio: 2/3;
-      object-fit: cover;
-      display: block;
-      background: var(--surface2);
-    }
+/* EMPTY */
+.empty-state{padding:64px 20px;text-align:center;animation:fadeUp .3s var(--ease) both;}
+.empty-icon{width:56px;height:56px;border-radius:18px;background:var(--bg3);border:1px solid var(--b0);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;color:var(--t3);}
+.empty-title{font-size:15px;font-weight:700;margin-bottom:6px;}
+.empty-sub{font-size:12.5px;color:var(--t3);line-height:1.6;}
 
-    .card-badge {
-      position: absolute;
-      top: 6px; right: 6px;
-      background: var(--accent);
-      color: #fff;
-      font-size: 9px;
-      font-weight: 700;
-      padding: 2px 6px;
-      border-radius: 6px;
-      line-height: 1.4;
-    }
+/* KEYFRAMES */
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+@keyframes spin{to{transform:rotate(360deg);}}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
 
-    .card-poster-wrap { position: relative; }
+.grid .card:nth-child(1){animation-delay:.03s}
+.grid .card:nth-child(2){animation-delay:.06s}
+.grid .card:nth-child(3){animation-delay:.09s}
+.grid .card:nth-child(4){animation-delay:.12s}
+.grid .card:nth-child(5){animation-delay:.15s}
+.grid .card:nth-child(6){animation-delay:.18s}
+.grid .card:nth-child(n+7){animation-delay:.2s}
 
-    .card-info {
-      padding: 8px;
-    }
-    .card-info h3 {
-      font-size: 11px;
-      font-weight: 600;
-      line-height: 1.4;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-
-    /* ── DETAIL PAGE ── */
-    .detail-hero {
-      display: flex;
-      gap: 14px;
-      margin-bottom: 20px;
-    }
-    .detail-poster {
-      width: 120px;
-      min-width: 120px;
-      border-radius: 12px;
-      aspect-ratio: 2/3;
-      object-fit: cover;
-      background: var(--surface2);
-    }
-    .detail-meta { flex: 1; min-width: 0; }
-    .detail-title {
-      font-size: 16px;
-      font-weight: 800;
-      line-height: 1.3;
-      margin-bottom: 8px;
-      color: var(--text);
-    }
-    .detail-badge-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
-    .badge {
-      font-size: 10px;
-      font-weight: 700;
-      padding: 3px 10px;
-      border-radius: 99px;
-      background: var(--surface2);
-      color: var(--muted);
-      border: 1px solid var(--border);
-    }
-    .badge.red { background: rgba(230,57,70,.15); color: var(--accent2); border-color: rgba(230,57,70,.3); }
-
-    .synopsis-box {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 14px;
-      font-size: 12px;
-      color: var(--muted);
-      line-height: 1.7;
-      max-height: 120px;
-      overflow-y: auto;
-      margin-bottom: 18px;
-    }
-
-    .ep-list-title {
-      font-size: 13px;
-      font-weight: 700;
-      margin-bottom: 10px;
-      color: var(--text);
-    }
-
-    .ep-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 8px;
-      max-height: 320px;
-      overflow-y: auto;
-      padding-right: 2px;
-    }
-    .ep-grid::-webkit-scrollbar { width: 3px; }
-    .ep-grid::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-
-    .ep-btn {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      color: var(--text);
-      cursor: pointer;
-      font-family: 'Sora', sans-serif;
-      font-size: 11px;
-      font-weight: 600;
-      padding: 10px 8px;
-      text-align: left;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      transition: background .15s, border-color .15s;
-    }
-    .ep-btn:active { background: rgba(230,57,70,.15); border-color: var(--accent); }
-
-    /* ── PLAYER PAGE ── */
-    .player-wrap {
-      background: #000;
-      border-radius: var(--radius);
-      overflow: hidden;
-      aspect-ratio: 16/9;
-      margin-bottom: 14px;
-      border: 1px solid var(--border);
-    }
-    .player-wrap iframe {
-      width: 100%; height: 100%;
-      border: none;
-      display: block;
-    }
-
-    .player-title {
-      font-size: 14px;
-      font-weight: 700;
-      margin-bottom: 12px;
-      line-height: 1.4;
-    }
-
-    .server-box {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 12px;
-    }
-    .server-label {
-      font-size: 10px;
-      font-weight: 700;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: .5px;
-      margin-bottom: 10px;
-    }
-    .server-btns { display: flex; flex-wrap: wrap; gap: 8px; }
-    .server-btn {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--text);
-      cursor: pointer;
-      font-family: 'Sora', sans-serif;
-      font-size: 11px;
-      font-weight: 600;
-      padding: 8px 14px;
-      transition: background .15s, border-color .15s;
-    }
-    .server-btn:active, .server-btn.active {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: #fff;
-    }
-
-    /* ── BACK BTN ── */
-    .back-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 99px;
-      color: var(--text);
-      cursor: pointer;
-      font-family: 'Sora', sans-serif;
-      font-size: 12px;
-      font-weight: 600;
-      padding: 8px 14px;
-      margin-bottom: 16px;
-      transition: opacity .15s;
-    }
-    .back-btn:active { opacity: .7; }
-
-    /* ── LOADER ── */
-    #loader {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(11,12,16,.85);
-      z-index: 200;
-      align-items: center;
-      justify-content: center;
-    }
-    .spinner {
-      width: 44px; height: 44px;
-      border: 3px solid var(--border);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin .7s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* ── EMPTY STATE ── */
-    .empty {
-      text-align: center;
-      padding: 60px 20px;
-      color: var(--muted);
-      font-size: 13px;
-    }
-    .empty-icon { font-size: 40px; margin-bottom: 12px; }
-
-    /* scrollbar global */
-    ::-webkit-scrollbar { width: 4px; }
-    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-  </style>
+@media(min-width:580px){
+  #app{max-width:580px;}
+  .grid{grid-template-columns:repeat(4,1fr);}
+  .ep-list{grid-template-columns:repeat(3,1fr);max-height:340px;}
+}
+</style>
 </head>
 <body>
 
-  <!-- TOPBAR -->
-  <nav id="topbar">
-    <div class="logo" onclick="loadHome()"><span>ANI</span>CHIN</div>
-    <div class="search-wrap">
-      <input type="text" id="searchInput" placeholder="Cari anime..." onkeydown="if(event.key==='Enter')doSearch()" />
-      <button id="searchBtn" onclick="doSearch()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+<nav id="topbar">
+  <div class="logo" onclick="goHome()">Anichin</div>
+  <div class="spill">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input id="si" type="text" placeholder="Cari donghua..." onkeydown="if(event.key==='Enter')doSearch()"/>
+    <button class="sgo" onclick="doSearch()">Cari</button>
+  </div>
+</nav>
+
+<main id="app"></main>
+
+<nav id="botnav">
+  <button class="nb on" id="nb-home" onclick="goHome()">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><polyline points="9 21 9 12 15 12 15 21"/></svg>
+    Beranda
+  </button>
+  <button class="nb" id="nb-search" onclick="focusSearch()">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    Cari
+  </button>
+  <button class="nb" id="nb-done" onclick="goCompleted()">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+    Selesai
+  </button>
+  <button class="nb" id="nb-sched" onclick="goSchedule()">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    Jadwal
+  </button>
+</nav>
+
+<div id="loader"><div class="spin"></div><span class="spin-label">Memuat...</span></div>
+<div id="toast"></div>
+
+<!-- reusable SVG icon defs -->
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="i-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></symbol>
+  <symbol id="i-dl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></symbol>
+  <symbol id="i-sort" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M7 12h10M11 18h2"/></symbol>
+  <symbol id="i-srv" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><circle cx="6" cy="6" r="1" fill="currentColor"/><circle cx="6" cy="18" r="1" fill="currentColor"/></symbol>
+  <symbol id="i-wifi-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="1" y1="1" x2="23" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/><path d="M10.71 5.05A16 16 0 0 1 22.56 9"/><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1" fill="currentColor"/></symbol>
+  <symbol id="i-film" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></symbol>
+  <symbol id="i-search-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><line x1="8" y1="11" x2="14" y2="11"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></symbol>
+</svg>
+
+<script>
+const API='/api';
+
+const $app=()=>document.getElementById('app');
+const $show=()=>document.getElementById('loader').style.display='flex';
+const $hide=()=>document.getElementById('loader').style.display='none';
+const $top=()=>window.scrollTo({top:0,behavior:'instant'});
+const $e=s=>(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+
+function setNav(id){document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));const el=document.getElementById(id);if(el)el.classList.add('on');}
+
+let _tt;
+function toast(msg,ms=2000){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('on');clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('on'),ms);}
+
+function imgFail(img){img.onerror=null;img.style.background='#1a1a1d';}
+
+function ico(id,sz=14){return`<svg width="${sz}" height="${sz}"><use href="#${id}"/></svg>`;}
+
+async function get(path){
+  const r=await fetch(API+path,{headers:{'Accept':'application/json'}});
+  if(!r.ok)throw new Error(`HTTP ${r.status}`);
+  return r.json();
+}
+
+function renderEmpty(title,sub,iconId='i-wifi-x'){
+  $app().innerHTML=`<div class="empty-state"><div class="empty-icon">${ico(iconId,26)}</div><div class="empty-title">${title}</div><div class="empty-sub">${sub}</div></div>`;
+}
+
+function cardHTML(item,mode){
+  const sl=$e(item.slug),ti=$e(item.title);
+  const fn=mode==='episode'?`goWatch('${sl}','${ti}')`:`goDetail('${sl}')`;
+  const chip=item.current_episode||item.episode||item.status||'';
+  return`<div class="card" onclick="${fn}"><div class="card-img"><img src="${item.poster||''}" alt="" loading="lazy" onerror="imgFail(this)">${chip?`<div class="ep-tag"><span class="ep-chip">${chip}</span></div>`:''}</div><div class="card-body"><div class="card-title">${item.title||''}</div></div></div>`;
+}
+
+/* HOME */
+let hp=1,hi=[];
+async function goHome(reset=true){
+  setNav('nb-home');
+  if(reset){hp=1;hi=[];}
+  $show();
+  try{
+    const j=await get(`/donghua/home/${hp}`);
+    const items=j.latest_release||[];
+    hi=reset?items:[...hi,...items];
+    const hero=hi[0];
+    let html='';
+    if(hero){
+      html+=`<div class="hero" onclick="goWatch('${$e(hero.slug)}','${$e(hero.title)}')"><img src="${hero.poster||''}" alt="" onerror="imgFail(this)"><div class="hero-grad"><div class="hero-tag"><div class="live-dot"></div>Terbaru</div><div class="hero-title">${hero.title}</div><div class="hero-sub">${hero.current_episode||''} · ${hero.type||'Donghua'}</div></div><div class="hero-play">${ico('i-play',18)}</div></div>`;
+    }
+    html+=`<div class="sh"><span class="sh-title">Update Terbaru</span></div><div class="grid">`;
+    hi.slice(1).forEach(item=>{html+=cardHTML(item,'episode');});
+    html+=`</div><button class="load-more" onclick="loadMoreHome()">${ico('i-more',16)} Muat Lebih Banyak</button>`;
+    $app().innerHTML=html;
+  }catch(e){renderEmpty('Gagal Memuat','Tidak dapat terhubung ke server. Coba lagi beberapa saat.','i-wifi-x');}
+  $hide();
+  if(reset)$top();
+}
+async function loadMoreHome(){hp++;await goHome(false);}
+
+/* SEARCH */
+function focusSearch(){setNav('nb-search');document.getElementById('si').focus();}
+async function doSearch(){
+  const q=document.getElementById('si').value.trim();
+  if(!q){toast('Masukkan kata kunci');return;}
+  setNav('nb-search');$show();$top();
+  try{
+    const j=await get(`/donghua/search/${encodeURIComponent(q)}/1`);
+    const data=j.data||[];
+    if(!data.length){renderEmpty('Tidak Ditemukan',`Tidak ada hasil untuk "${q}"`,   'i-search-x');$hide();return;}
+    let html=`<div class="sh"><span class="sh-title">Hasil Pencarian</span><span style="font-size:11px;color:var(--t3);font-weight:600">${data.length} hasil</span></div><div class="grid">`;
+    data.forEach(item=>{
+      const mode=(item.href||'').includes('/detail/')?'detail':'episode';
+      html+=cardHTML(item,mode);
+    });
+    html+='</div>';
+    $app().innerHTML=html;
+  }catch(e){renderEmpty('Pencarian Gagal','Tidak dapat terhubung ke server.','i-wifi-x');}
+  $hide();
+}
+
+/* DETAIL */
+async function goDetail(slug){
+  $show();$top();
+  try{
+    const d=await get(`/donghua/detail/${slug}`);
+    let list=[...(d.episodes_list||[])];
+    let flipped=false;
+
+    function render(){
+      const sc=d.status==='Completed'?'g':'b';
+      let html=`<button class="back-btn" onclick="history.back()">${ico('i-back',14)} Kembali</button>
+      <div class="dt-banner"><img src="${d.poster||''}" alt="" onerror="imgFail(this)"><div class="dt-banner-grad"></div></div>
+      <div class="dt-info"><img class="dt-poster" src="${d.poster||''}" alt="" onerror="imgFail(this)"><div class="dt-meta"><div class="dt-title">${d.title}</div>${d.alter_title?`<div class="dt-alt">${d.alter_title}</div>`:''}</div></div>
+      <div class="chips"><span class="chip ${sc}">${d.status||'—'}</span><span class="chip">${d.type||'Donghua'}</span>${d.rating&&d.rating!=='0'?`<span class="chip a">★ ${d.rating}</span>`:''}<span class="chip">${d.episodes_count||'?'} Eps</span>${d.released&&d.released!=='-'?`<span class="chip">${d.released}</span>`:''}${(d.genres||[]).slice(0,4).map(g=>`<span class="chip">${g.name}</span>`).join('')}</div>
+      <div class="synopsis">${d.synopsis||'Tidak ada sinopsis.'}</div>
+      <div class="ep-bar"><span class="ep-bar-title">Episode · ${d.episodes_count||0}</span><button class="ep-flip-btn" onclick="window._flip()">${ico('i-sort',13)} ${flipped?'Terbaru Dulu':'Terlama Dulu'}</button></div>
+      <div class="ep-list">${list.map(ep=>`<button class="ep-item" onclick="goWatch('${$e(ep.slug)}','${$e(ep.episode)}')">${ep.episode}</button>`).join('')}</div>`;
+      $app().innerHTML=html;
+    }
+    window._flip=function(){flipped=!flipped;list=list.reverse();render();};
+    render();
+  }catch(e){renderEmpty('Gagal Memuat Detail','Terjadi kesalahan saat mengambil data.','i-wifi-x');}
+  $hide();
+}
+
+/* PLAYER */
+async function goWatch(slug,title){
+  $show();$top();
+  try{
+    const j=await get(`/donghua/episode/${slug}`);
+    const servers=j.streaming?.servers||[];
+    const main=j.streaming?.main_url;
+    const nav=j.navigation||{};
+    const dl=j.download_url||{};
+    const det=j.donghua_details||{};
+    if(!main){renderEmpty('Video Tidak Tersedia','Tidak ada server streaming untuk episode ini.','i-film');$hide();return;}
+
+    let dlHtml='';
+    const dlKeys=Object.keys(dl);
+    if(dlKeys.length){
+      dlHtml=`<div class="scard"><div class="scard-label">${ico('i-dl',13)} Download</div>`;
+      dlKeys.forEach(key=>{
+        const q=key.replace('download_url_','').toUpperCase();
+        dlHtml+=`<div class="dl-q-head">${q}</div><div class="dl-row">${Object.entries(dl[key]).map(([n,u])=>`<a class="dl-chip" href="${u}" target="_blank" rel="noopener">${ico('i-dl',12)} ${n}</a>`).join('')}</div>`;
+      });
+      dlHtml+='</div>';
+    }
+
+    const pslug=nav.previous_episode?.slug;
+    const nslug=nav.next_episode?.slug;
+
+    let html=`<button class="back-btn" onclick="${det.slug?`goDetail('${$e(det.slug)}')`:'goHome()'}">${ico('i-back',14)} ${det.title||'Kembali'}</button>
+    <div class="player-wrap"><iframe id="pf" src="${main.url}" allowfullscreen referrerpolicy="no-referrer" allow="autoplay; fullscreen"></iframe></div>
+    <div class="player-meta">${det.title?`<div class="player-show">${det.title}</div>`:''}<div class="player-ep-title">${j.episode||title||''}</div></div>
+    <div class="ep-nav-pair">
+      <button class="nav-ep-btn" ${pslug?'':'disabled'} onclick="${pslug?`goWatch('${$e(pslug)}','Ep Sebelumnya')`:''}" style="text-align:left">
+        <div class="nav-dir">${ico('i-back',11)} Sebelumnya</div>
+        <div class="nav-ep-name">${nav.previous_episode?.episode||'—'}</div>
+      </button>
+      <button class="nav-ep-btn" ${nslug?'':'disabled'} onclick="${nslug?`goWatch('${$e(nslug)}','Ep Berikutnya')`:''}" style="text-align:right">
+        <div class="nav-dir" style="justify-content:flex-end">Berikutnya ${ico('i-back',11)}</div>
+        <div class="nav-ep-name">${nav.next_episode?.episode||'—'}</div>
       </button>
     </div>
-  </nav>
+    ${servers.length>1?`<div class="scard"><div class="scard-label">${ico('i-srv',13)} Server</div><div class="srv-row">${servers.map((s,i)=>`<button class="srv-btn${i===0?' on':''}" onclick="swSrv(this,'${$e(s.url)}')">${s.name}</button>`).join('')}</div></div>`:''}
+    ${dlHtml}`;
+    $app().innerHTML=html;
+  }catch(e){renderEmpty('Gagal Memuat Episode','Tidak dapat terhubung ke server.','i-wifi-x');}
+  $hide();
+}
+window.swSrv=function(btn,url){document.querySelectorAll('.srv-btn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');document.getElementById('pf').src=url;toast(`Server: ${btn.textContent}`);};
 
-  <!-- MAIN CONTENT -->
-  <main id="app"></main>
+/* COMPLETED */
+let cp=1,ci=[];
+async function goCompleted(reset=true){
+  setNav('nb-done');
+  if(reset){cp=1;ci=[];}
+  $show();
+  try{
+    const j=await get(`/donghua/completed/${cp}`);
+    const items=j.completed_donghua||[];
+    ci=reset?items:[...ci,...items];
+    let html=`<div class="sh"><span class="sh-title">Tamat</span></div><div class="grid">`;
+    ci.forEach(item=>{html+=cardHTML(item,'detail');});
+    html+=`</div><button class="load-more" onclick="loadMoreComp()">${ico('i-more',16)} Muat Lebih Banyak</button>`;
+    $app().innerHTML=html;
+  }catch(e){renderEmpty('Gagal Memuat','Tidak dapat terhubung ke server.','i-wifi-x');}
+  $hide();
+  if(reset)$top();
+}
+async function loadMoreComp(){cp++;await goCompleted(false);}
 
-  <!-- BOTTOM NAV -->
-  <nav id="bottomNav">
-    <button class="nav-item active" id="nav-home" onclick="loadHome()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9.5 12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5Z"/><path d="M9 21V12h6v9"/></svg>
-      Home
-    </button>
-    <button class="nav-item" id="nav-completed" onclick="loadCompleted()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-      Selesai
-    </button>
-    <button class="nav-item" id="nav-schedule" onclick="loadSchedule()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-      Jadwal
-    </button>
-  </nav>
-
-  <!-- LOADER -->
-  <div id="loader"><div class="spinner"></div></div>
-
-  <script>
-    const API = '';
-    const show = () => document.getElementById('loader').style.display = 'flex';
-    const hide = () => document.getElementById('loader').style.display = 'none';
-
-    function setNav(id) {
-      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-      const el = document.getElementById(id);
-      if (el) el.classList.add('active');
-    }
-
-    // ─── HOME ───
-    async function loadHome() {
-      setNav('nav-home');
-      show();
-      try {
-        const res = await fetch(`${API}/donghua/home/1`);
-        const json = await res.json();
-        renderGrid(json.latest_release || [], 'Update Terbaru');
-      } catch { renderEmpty('Gagal memuat data.'); }
-      hide();
-    }
-
-    // ─── SEARCH ───
-    async function doSearch() {
-      const q = document.getElementById('searchInput').value.trim();
-      if (!q) return;
-      setNav('');
-      show();
-      try {
-        const res = await fetch(`${API}/donghua/search/${encodeURIComponent(q)}/1`);
-        const json = await res.json();
-        renderGrid(json.data || [], `Hasil: "${q}"`);
-      } catch { renderEmpty('Gagal melakukan pencarian.'); }
-      hide();
-    }
-
-    // ─── COMPLETED ───
-    async function loadCompleted() {
-      setNav('nav-completed');
-      show();
-      try {
-        const res = await fetch(`${API}/donghua/completed/1`);
-        const json = await res.json();
-        renderGrid(json.completed_donghua || [], 'Donghua Selesai');
-      } catch { renderEmpty('Gagal memuat data.'); }
-      hide();
-    }
-
-    // ─── SCHEDULE ───
-    async function loadSchedule() {
-      setNav('nav-schedule');
-      show();
-      try {
-        const res = await fetch(`${API}/donghua/schedule`);
-        const json = await res.json();
-        renderSchedule(json.schedule || []);
-      } catch { renderEmpty('Gagal memuat jadwal.'); }
-      hide();
-    }
-
-    // ─── RENDER GRID ───
-    function renderGrid(data, title) {
-      const app = document.getElementById('app');
-      if (!data.length) { renderEmpty('Tidak ada data ditemukan.'); return; }
-
-      let html = `<p class="section-title">${title}</p><div class="grid">`;
-      data.forEach(item => {
-        const poster = item.poster || '';
-        const ep = item.current_episode || item.status || '';
-        const isEpisode = item.href && item.href.includes('/episode/');
-        const fn = isEpisode ? `loadWatch('${esc(item.slug)}')` : `loadDetail('${esc(item.slug)}')`;
-
-        html += `
-        <div class="card" onclick="${fn}">
-          <div class="card-poster-wrap">
-            <img class="card-poster" src="${poster}" alt="" loading="lazy" onerror="this.style.background='#1c1e28'">
-            ${ep ? `<span class="card-badge">${ep}</span>` : ''}
-          </div>
-          <div class="card-info"><h3>${item.title || ''}</h3></div>
-        </div>`;
+/* SCHEDULE */
+async function goSchedule(){
+  setNav('nb-sched');$show();$top();
+  try{
+    const j=await get('/donghua/schedule');
+    const sched=j.schedule||[];
+    const DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const today=DAYS[new Date().getDay()];
+    if(!sched.length){renderEmpty('Jadwal Kosong','Belum ada jadwal tersedia.','i-film');$hide();return;}
+    let html=`<div class="sh"><span class="sh-title">Jadwal Rilis</span></div>`;
+    sched.forEach(d=>{
+      const isToday=d.day===today;
+      html+=`<div class="sched-block"><div class="sched-day-head${isToday?' today':''}">${isToday?'<div class="today-pip"></div>':''}${d.day}${isToday?' — Hari Ini':''}</div><div class="sched-scroll">`;
+      d.anime_list.forEach(item=>{
+        const isEp=(item.href||'').includes('/episode/');
+        const fn=isEp?`goWatch('${$e(item.slug)}','${$e(item.title)}')`:`goDetail('${$e(item.slug)}')`;
+        html+=`<div class="sched-card" onclick="${fn}"><img src="${item.poster||''}" alt="" loading="lazy" onerror="imgFail(this)"><div class="sched-card-info"><div class="sched-card-title">${item.title}</div><div class="sched-time">${item.time||''}</div></div></div>`;
       });
-      html += '</div>';
-      app.innerHTML = html;
-    }
+      html+=`</div></div>`;
+    });
+    $app().innerHTML=html;
+  }catch(e){renderEmpty('Gagal Memuat Jadwal','Tidak dapat terhubung ke server.','i-wifi-x');}
+  $hide();
+}
 
-    // ─── RENDER SCHEDULE ───
-    function renderSchedule(schedule) {
-      const app = document.getElementById('app');
-      const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-      const today = days[new Date().getDay()];
-
-      let html = `<p class="section-title">Jadwal Rilis</p>`;
-      schedule.forEach(d => {
-        const isToday = d.day === today;
-        html += `
-        <div style="margin-bottom:20px">
-          <p style="font-size:12px;font-weight:700;color:${isToday ? 'var(--accent)' : 'var(--muted)'};margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">${isToday ? '🔴 ' : ''}${d.day}</p>
-          <div class="grid">`;
-        d.anime_list.forEach(item => {
-          const isEpisode = item.href && item.href.includes('/episode/');
-          const fn = isEpisode ? `loadWatch('${esc(item.slug)}')` : `loadDetail('${esc(item.slug)}')`;
-          html += `
-          <div class="card" onclick="${fn}">
-            <div class="card-poster-wrap">
-              <img class="card-poster" src="${item.poster}" alt="" loading="lazy" onerror="this.style.background='#1c1e28'">
-              <span class="card-badge">${item.time || '?'}</span>
-            </div>
-            <div class="card-info"><h3>${item.title}</h3></div>
-          </div>`;
-        });
-        html += '</div></div>';
-      });
-      app.innerHTML = html;
-    }
-
-    // ─── DETAIL ───
-    async function loadDetail(slug) {
-      show();
-      try {
-        const res = await fetch(`${API}/donghua/detail/${slug}`);
-        const d = await res.json();
-
-        let html = `
-        <button class="back-btn" onclick="loadHome()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
-          Kembali
-        </button>
-        <div class="detail-hero">
-          <img class="detail-poster" src="${d.poster}" alt="" onerror="this.style.background='#1c1e28'">
-          <div class="detail-meta">
-            <h2 class="detail-title">${d.title}</h2>
-            <div class="detail-badge-row">
-              <span class="badge red">${d.status}</span>
-              <span class="badge">${d.type}</span>
-              <span class="badge">⭐ ${d.rating}</span>
-              <span class="badge">${d.episodes_count} Eps</span>
-            </div>
-            <div class="detail-badge-row">
-              ${(d.genres || []).slice(0,4).map(g=>`<span class="badge">${g.name}</span>`).join('')}
-            </div>
-          </div>
-        </div>
-        <div class="synopsis-box">${d.synopsis || 'Tidak ada sinopsis.'}</div>
-        <p class="ep-list-title">Episode (${d.episodes_count})</p>
-        <div class="ep-grid">`;
-
-        (d.episodes_list || []).forEach(ep => {
-          html += `<button class="ep-btn" onclick="loadWatch('${esc(ep.slug)}')">${ep.episode}</button>`;
-        });
-
-        html += '</div>';
-        document.getElementById('app').innerHTML = html;
-      } catch { renderEmpty('Gagal memuat detail.'); }
-      hide();
-    }
-
-    // ─── WATCH ───
-    async function loadWatch(slug) {
-      show();
-      try {
-        const res = await fetch(`${API}/donghua/episode/${slug}`);
-        const json = await res.json();
-
-        const servers = json.streaming?.servers || [];
-        const main = json.streaming?.main_url;
-
-        if (!main) {
-          renderEmpty('Link video tidak tersedia.');
-          hide(); return;
-        }
-
-        let html = `
-        <button class="back-btn" onclick="history.go(-1)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
-          Kembali
-        </button>
-        <div class="player-wrap">
-          <iframe id="playerFrame" src="${main.url}" allowfullscreen referrerpolicy="no-referrer"></iframe>
-        </div>
-        <p class="player-title">${json.episode}</p>
-        <div class="server-box">
-          <p class="server-label">Pilih Server</p>
-          <div class="server-btns">
-            ${servers.map((s,i) => `
-              <button class="server-btn${i===0?' active':''}" onclick="switchServer(this,'${esc(s.url)}')">${s.name}</button>
-            `).join('')}
-          </div>
-        </div>`;
-
-        document.getElementById('app').innerHTML = html;
-      } catch { renderEmpty('Gagal memuat episode.'); }
-      hide();
-    }
-
-    function switchServer(btn, url) {
-      document.querySelectorAll('.server-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      document.getElementById('playerFrame').src = url;
-    }
-
-    function renderEmpty(msg) {
-      document.getElementById('app').innerHTML = `
-      <div class="empty">
-        <div class="empty-icon">📭</div>
-        <p>${msg}</p>
-      </div>`;
-    }
-
-    function esc(s) { return (s || '').replace(/'/g, "\\'"); }
-
-    loadHome();
-  </script>
+goHome();
+</script>
 </body>
 </html>
